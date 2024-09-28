@@ -1,11 +1,18 @@
+import 'package:cloze_call/pages/language_page.dart';
 import 'package:cloze_call/pages/learn_page.dart';
+import 'package:cloze_call/services/cloze_service.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import 'pages/home_page.dart';
 
-
 void main() {
-  runApp(const MyApp());
+  runApp(MultiProvider(
+    providers: [
+      Provider<ClozeService>(create: (_) => ClozeService()),
+    ],
+    child: const MyApp(),
+  ));
 }
 
 class MyApp extends StatelessWidget {
@@ -22,7 +29,8 @@ class MyApp extends StatelessWidget {
       initialRoute: '/',
       routes: {
         '/': (context) => const MyHomePage(),
-        '/learn': (context) => PlayPage(),
+        '/learn': (context) => LearnPage(),
+        '/language': (context) => LanguagePage(),
       },
     );
   }
