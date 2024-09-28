@@ -1,6 +1,10 @@
+import 'dart:typed_data';
+
+import 'package:audioplayers/audioplayers.dart';
 import 'package:cloze_call/services/cloze_service.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:edge_tts/edge_tts.dart' as edge_tts;
 
 class LearnPage extends StatefulWidget {
   const LearnPage({super.key});
@@ -11,21 +15,52 @@ class LearnPage extends StatefulWidget {
 
 class _LearnPageState extends State<LearnPage> {
   late ClozeService _clozeService;
+  late AudioPlayer _player;
   var _cloze = Cloze(original: "", translated: "", answer: "", words: []);
   var _answered = false;
+  ({String text, Uint8List audio})? _ttsState;
 
   @override
   void initState() {
+    super.initState();
     _clozeService = Provider.of<ClozeService>(context, listen: false);
+    _player = AudioPlayer();
     if (_clozeService.initialized) {
       _cloze = _clozeService.getRandomCloze();
     } else {
       Navigator.pop(context);
     }
-    super.initState();
+  }
+
+  @override
+  void dispose() {
+    _player.dispose();
+    super.dispose();
+  }
+
+  Future<void> playTTS(String text) async {
+    if (_ttsState == null || _ttsState?.text != text) {
+      var audio = await getTTS(text);
+      _ttsState = (text: text, audio: audio);
+    }
+    _player.play(BytesSource(_ttsState!.audio));
+  }
+
+  Future<Uint8List> getTTS(String text) async {
+    BytesBuilder builder = BytesBuilder();
+    // TODO: voice selection by language code
+    var communicate =
+        edge_tts.Communicate(text: text, voice: "ru-RU-DmitryNeural");
+    await for (var message in communicate.stream()) {
+      if (message['type'] == 'audio') {
+        builder.add(message['data']);
+      }
+    }
+    return builder.toBytes();
   }
 
   void onSelected(String selectedWord) async {
+    playTTS(_cloze.original);
     setState(() {
       _answered = true;
     });
@@ -71,7 +106,14 @@ class _LearnPageState extends State<LearnPage> {
 
   List<Widget> buildAnsweredCloze() {
     return [
-      Text(_cloze.original),
+      Row(mainAxisSize: MainAxisSize.min, children: [
+        Text(_cloze.original),
+        IconButton(
+            onPressed: () {
+              playTTS(_cloze.original);
+            },
+            icon: const Icon(Icons.audiotrack))
+      ]),
       for (var word in _cloze.words)
         Padding(
           padding: const EdgeInsets.symmetric(vertical: 8.0),
