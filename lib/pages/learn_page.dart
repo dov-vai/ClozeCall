@@ -20,8 +20,8 @@ class _LearnPageState extends State<LearnPage> {
   late ClozeService _clozeService;
   late AudioPlayer _player;
   final _translator = GoogleTranslator();
-  var _cloze = Cloze(original: "", translated: "", answer: "", words: []);
-  var _answered = false;
+  var _cloze = Cloze(original: '', translated: '', answer: '', words: []);
+  var _answered = '';
   ({String text, Uint8List audio})? _ttsState;
   final _translatedCache = HashMap<String, String>();
 
@@ -55,7 +55,7 @@ class _LearnPageState extends State<LearnPage> {
     BytesBuilder builder = BytesBuilder();
     // TODO: voice selection by language code
     var communicate =
-        edge_tts.Communicate(text: text, voice: "ru-RU-DmitryNeural");
+        edge_tts.Communicate(text: text, voice: 'ru-RU-DmitryNeural');
     await for (var message in communicate.stream()) {
       if (message['type'] == 'audio') {
         builder.add(message['data']);
@@ -67,14 +67,14 @@ class _LearnPageState extends State<LearnPage> {
   void onSelected(String selectedWord) async {
     playTTS(_cloze.original);
     setState(() {
-      _answered = true;
+      _answered = selectedWord;
     });
   }
 
   void onNext() {
     _player.stop();
     setState(() {
-      _answered = false;
+      _answered = '';
       _cloze = _clozeService.getRandomCloze();
     });
   }
@@ -99,7 +99,7 @@ class _LearnPageState extends State<LearnPage> {
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
-          children: _answered ? buildAnsweredCloze() : buildCloze(),
+          children: _answered.isNotEmpty ? buildAnsweredCloze() : buildCloze(),
         ),
       ),
     );
@@ -174,15 +174,18 @@ class _LearnPageState extends State<LearnPage> {
                 onSelected(word);
               },
               style: ElevatedButton.styleFrom(
-                  backgroundColor:
-                      word == _cloze.answer ? Colors.green : Colors.red),
+                  backgroundColor: word == _cloze.answer
+                      ? Colors.green
+                      : word == _answered
+                          ? Colors.red
+                          : null),
               child: Text(word.toLowerCase())),
         ),
       Padding(
         padding: const EdgeInsets.symmetric(vertical: 32.0),
         child: ElevatedButton(
           onPressed: onNext,
-          child: const Text("Next ➡️"),
+          child: const Text('Next ➡️'),
         ),
       )
     ];
