@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:math';
+import 'package:cloze_call/utils/text_utils.dart';
 import 'package:file_picker/file_picker.dart';
 
 class Cloze {
@@ -50,20 +51,18 @@ class ClozeService {
     return _generateCloze(line);
   }
 
-  String _removePunctuation(String input) {
-    return input.replaceAll(RegExp(r'[^\p{L}\p{N}\s]', unicode: true), '');
-  }
-
   Cloze _generateCloze(String line) {
     final sentences = line.split('\t');
     List<String> words = sentences[0].split(' ');
-    String removedWord = _removePunctuation(words.removeAt(_random.nextInt(words.length)));
+    String removedWord = TextUtils.removePunctuation(
+        words.removeAt(_random.nextInt(words.length)));
 
     List<String> randomWords = [removedWord];
     while (randomWords.length < 4) {
       String randomLine = _lines[_random.nextInt(_lines.length)].split('\t')[0];
       List<String> words = randomLine.split(' ');
-      String word = _removePunctuation(words[_random.nextInt(words.length)]).toLowerCase();
+      String word =
+          TextUtils.sanitizeWord(words[_random.nextInt(words.length)]);
 
       if (randomLine != line && !randomWords.contains(word)) {
         randomWords.add(word);

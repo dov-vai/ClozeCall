@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 class LanguagePage extends StatelessWidget {
+  const LanguagePage({super.key});
+
   @override
   Widget build(BuildContext context) {
     final clozeService = Provider.of<ClozeService>(context, listen: false);

@@ -29,8 +29,8 @@ class MyApp extends StatelessWidget {
       initialRoute: '/',
       routes: {
         '/': (context) => const MyHomePage(),
-        '/learn': (context) => LearnPage(),
-        '/language': (context) => LanguagePage(),
+        '/learn': (context) => const LearnPage(),
+        '/language': (context) => const LanguagePage(),
       },
     );
   }

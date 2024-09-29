@@ -1,10 +1,13 @@
+import 'dart:collection';
 import 'dart:typed_data';
 
 import 'package:audioplayers/audioplayers.dart';
 import 'package:cloze_call/services/cloze_service.dart';
+import 'package:cloze_call/utils/text_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:edge_tts/edge_tts.dart' as edge_tts;
+import 'package:translator/translator.dart';
 
 class LearnPage extends StatefulWidget {
   const LearnPage({super.key});
@@ -16,9 +19,11 @@ class LearnPage extends StatefulWidget {
 class _LearnPageState extends State<LearnPage> {
   late ClozeService _clozeService;
   late AudioPlayer _player;
+  final _translator = GoogleTranslator();
   var _cloze = Cloze(original: "", translated: "", answer: "", words: []);
   var _answered = false;
   ({String text, Uint8List audio})? _ttsState;
+  final _translatedCache = HashMap<String, String>();
 
   @override
   void initState() {
@@ -74,6 +79,17 @@ class _LearnPageState extends State<LearnPage> {
     });
   }
 
+  Future<void> onWordTooltip(String word) async {
+    if (_translatedCache[word] != null) {
+      return;
+    }
+    // TODO: language codes selection here too
+    var translation = await _translator.translate(word, from: 'ru', to: 'en');
+    setState(() {
+      _translatedCache[word] = translation.text;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -109,7 +125,39 @@ class _LearnPageState extends State<LearnPage> {
   List<Widget> buildAnsweredCloze() {
     return [
       Row(mainAxisSize: MainAxisSize.min, children: [
-        Text(_cloze.original),
+        for (var word in _cloze.original.split(' '))
+          Row(mainAxisSize: MainAxisSize.min, children: [
+            // use mouse region as hovering over the tooltip doesn't call onTrigger (hack)
+            MouseRegion(
+              onEnter: (_) async {
+                await onWordTooltip(TextUtils.sanitizeWord(word));
+              },
+              child: Tooltip(
+                message: _translatedCache[TextUtils.sanitizeWord(word)] ??
+                    'Translating...',
+                height: 25,
+                padding: const EdgeInsets.all(8.0),
+                preferBelow: true,
+                textStyle: const TextStyle(
+                  fontSize: 18,
+                ),
+                showDuration: const Duration(seconds: 2),
+                waitDuration: const Duration(seconds: 1),
+                onTriggered: () async {
+                  await onWordTooltip(TextUtils.sanitizeWord(word));
+                },
+                child: RichText(
+                    text: TextSpan(
+                  text: word,
+                  style: TextStyle(
+                      color: Theme.of(context).textTheme.bodySmall?.color ??
+                          Colors.black,
+                      decoration: TextDecoration.underline),
+                )),
+              ),
+            ),
+            const Text(' '),
+          ]),
         IconButton(
             onPressed: () async {
               await _player.stop();
