@@ -43,7 +43,7 @@ class _LearnPageState extends State<LearnPage> {
       var audio = await getTTS(text);
       _ttsState = (text: text, audio: audio);
     }
-    _player.play(BytesSource(_ttsState!.audio));
+    await _player.play(BytesSource(_ttsState!.audio));
   }
 
   Future<Uint8List> getTTS(String text) async {
@@ -67,6 +67,7 @@ class _LearnPageState extends State<LearnPage> {
   }
 
   void onNext() {
+    _player.stop();
     setState(() {
       _answered = false;
       _cloze = _clozeService.getRandomCloze();
@@ -90,7 +91,8 @@ class _LearnPageState extends State<LearnPage> {
 
   List<Widget> buildCloze() {
     return [
-      Text(_cloze.original.replaceFirst(_cloze.answer, '_')),
+      Text(_cloze.original.replaceFirst(_cloze.answer, '_____')),
+      Text(_cloze.translated),
       for (var word in _cloze.words)
         Padding(
           padding: const EdgeInsets.symmetric(vertical: 8.0),
@@ -98,7 +100,7 @@ class _LearnPageState extends State<LearnPage> {
             onPressed: () {
               onSelected(word);
             },
-            child: Text(word),
+            child: Text(word.toLowerCase()),
           ),
         )
     ];
@@ -109,11 +111,13 @@ class _LearnPageState extends State<LearnPage> {
       Row(mainAxisSize: MainAxisSize.min, children: [
         Text(_cloze.original),
         IconButton(
-            onPressed: () {
-              playTTS(_cloze.original);
+            onPressed: () async {
+              await _player.stop();
+              await playTTS(_cloze.original);
             },
             icon: const Icon(Icons.audiotrack))
       ]),
+      Text(_cloze.translated),
       for (var word in _cloze.words)
         Padding(
           padding: const EdgeInsets.symmetric(vertical: 8.0),
@@ -124,7 +128,7 @@ class _LearnPageState extends State<LearnPage> {
               style: ElevatedButton.styleFrom(
                   backgroundColor:
                       word == _cloze.answer ? Colors.green : Colors.red),
-              child: Text("$word️")),
+              child: Text(word.toLowerCase())),
         ),
       Padding(
         padding: const EdgeInsets.symmetric(vertical: 32.0),

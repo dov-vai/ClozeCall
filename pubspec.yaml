@@ -33,6 +33,7 @@ dependencies:
   edge_tts:
     git:
       url: https://github.com/dov-vai/edge_tts
+      ref: b673d3d353ef4877477162984dde5b7692528ce5
 
 
   # The following adds the Cupertino Icons font to your application.

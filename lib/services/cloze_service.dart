@@ -50,22 +50,25 @@ class ClozeService {
     return _generateCloze(line);
   }
 
+  String _removePunctuation(String input) {
+    return input.replaceAll(RegExp(r'[^\p{L}\p{N}\s]', unicode: true), '');
+  }
+
   Cloze _generateCloze(String line) {
     final sentences = line.split('\t');
     List<String> words = sentences[0].split(' ');
-    String removedWord = words.removeAt(_random.nextInt(words.length));
+    String removedWord = _removePunctuation(words.removeAt(_random.nextInt(words.length)));
 
-    List<String> randomWords = [];
-    while (randomWords.length < 3) {
+    List<String> randomWords = [removedWord];
+    while (randomWords.length < 4) {
       String randomLine = _lines[_random.nextInt(_lines.length)].split('\t')[0];
       List<String> words = randomLine.split(' ');
-      String word = words[_random.nextInt(words.length)];
+      String word = _removePunctuation(words[_random.nextInt(words.length)]).toLowerCase();
 
       if (randomLine != line && !randomWords.contains(word)) {
         randomWords.add(word);
       }
     }
-    randomWords.add(removedWord);
 
     return Cloze(
         original: sentences[0],
