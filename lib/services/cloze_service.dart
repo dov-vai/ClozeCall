@@ -1,7 +1,19 @@
 import 'dart:io';
 import 'dart:math';
+import 'package:cloze_call/data/models/config.dart';
+import 'package:cloze_call/data/repositories/config_repository.dart';
 import 'package:cloze_call/utils/text_utils.dart';
 import 'package:file_picker/file_picker.dart';
+
+class ClozeServiceException implements Exception {
+  final String message;
+
+  ClozeServiceException(
+      [this.message = "An error occured in the cloze service!"]);
+
+  @override
+  String toString() => "ClozeServiceException: $message";
+}
 
 class Cloze {
   final String original;
@@ -17,35 +29,56 @@ class Cloze {
 }
 
 class ClozeService {
-  late File? _file;
   late List<String> _lines;
   final Random _random = Random();
   bool _initialized = false;
+  final ConfigRepository _config;
 
   bool get initialized => _initialized;
+
+  ClozeService(this._config);
 
   Future<void> initialize() async {
     if (_initialized) {
       return;
     }
 
+    var path = await _config.get('language_file') ?? await pickLanguageFile();
+
+    // file location moved?
+    if (!await File(path).exists()) {
+      path = await pickLanguageFile();
+    }
+
+    _lines = await File(path).readAsLines();
+    _initialized = true;
+  }
+
+  Future<String> pickLanguageFile() async {
+    // clear cache of previously selected language file
+    FilePicker.platform.clearTemporaryFiles();
+
     FilePickerResult? result = await FilePicker.platform.pickFiles(
+      dialogTitle: "Select the language file",
       type: FileType.custom,
       allowedExtensions: ['tsv'],
     );
 
-    if (result != null) {
-      _file = File(result.files.single.path!);
-      _lines = await _file!.readAsLines();
-      _initialized = true;
-    } else {
-      throw Exception('No file selected.');
+    final path = result?.files.single.path;
+
+    if (path == null) {
+      throw ClozeServiceException("No file selected!");
     }
+
+    await _config.insert(Config(key: 'language_file', value: path));
+    _initialized = false;
+
+    return path;
   }
 
   Cloze getRandomCloze() {
     if (!_initialized) {
-      throw Exception("Cloze Service is not initialized!");
+      throw ClozeServiceException("Not initialized!");
     }
     String line = _lines[_random.nextInt(_lines.length)];
     return _generateCloze(line);

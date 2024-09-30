@@ -18,6 +18,7 @@ class LanguagePage extends StatelessWidget {
           children: [
             ElevatedButton(
               onPressed: () async {
+                await clozeService.pickLanguageFile();
                 await clozeService.initialize();
               },
               child: const Text('Select language file'),

@@ -30,11 +30,13 @@ class _LearnPageState extends State<LearnPage> {
     super.initState();
     _clozeService = Provider.of<ClozeService>(context, listen: false);
     _player = AudioPlayer();
-    if (_clozeService.initialized) {
-      _cloze = _clozeService.getRandomCloze();
-    } else {
+
+    if (!_clozeService.initialized) {
       Navigator.pop(context);
+      return;
     }
+
+    _cloze = _clozeService.getRandomCloze();
   }
 
   @override
