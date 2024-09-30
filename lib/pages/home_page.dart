@@ -15,6 +15,8 @@ class _MyHomePageState extends State<MyHomePage> {
         title: const Text('Cloze Call'),
       ),
       body: Center(
+          child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 64),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -22,20 +24,25 @@ class _MyHomePageState extends State<MyHomePage> {
               onPressed: () {
                 Navigator.pushNamed(context, '/learn');
               },
+              style: ElevatedButton.styleFrom(
+                minimumSize: const Size(double.infinity, 64),
+              ),
               icon: const Icon(Icons.school),
               label: const Text("Learn"),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 32),
             ElevatedButton.icon(
               onPressed: () {
                 Navigator.pushNamed(context, '/language');
               },
+              style: ElevatedButton.styleFrom(
+                  minimumSize: const Size(double.infinity, 64)),
               icon: const Icon(Icons.language),
               label: const Text("Language"),
             ),
           ],
         ),
-      ),
+      )),
     );
   }
 }

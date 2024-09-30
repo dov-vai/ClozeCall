@@ -30,9 +30,12 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Cloze Call',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),
-        useMaterial3: true,
-      ),
+          colorScheme: ColorScheme.fromSeed(seedColor: Colors.orange),
+          useMaterial3: true),
+      darkTheme: ThemeData(
+          colorScheme: ColorScheme.fromSeed(
+              seedColor: Colors.orange, brightness: Brightness.dark),
+          useMaterial3: true),
       initialRoute: '/',
       routes: {
         '/': (context) => const MyHomePage(),
