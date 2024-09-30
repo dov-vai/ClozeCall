@@ -43,6 +43,10 @@ dependencies:
   file_picker: ^8.1.2
   provider: ^6.1.2
   translator: ^1.0.0
+  sqflite_common_ffi: ^2.3.3+1
+  path_provider: ^2.1.4
+  path: ^1.9.0
+  sqflite: ^2.3.3+2
 
 dev_dependencies:
   flutter_test:
