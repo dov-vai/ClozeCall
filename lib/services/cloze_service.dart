@@ -97,10 +97,12 @@ class ClozeService {
       String word =
           TextUtils.sanitizeWord(words[_random.nextInt(words.length)]);
 
-      if (randomLine != line && !randomWords.contains(word)) {
+      if (word.isNotEmpty && randomLine != line && !randomWords.contains(word)) {
         randomWords.add(word);
       }
     }
+
+    randomWords.shuffle();
 
     return Cloze(
         original: sentences[0],
