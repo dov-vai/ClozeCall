@@ -41,6 +41,15 @@ class DatabaseHelper {
     CREATE TABLE IF NOT EXISTS config(
       key TEXT PRIMARY KEY,
       value TEXT
+    );
+    
+    CREATE TABLE IF NOT EXISTS review(
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      timestamp INTEGER,
+      original TEXT,
+      translated TEXT,
+      answer TEXT UNIQUE,
+      words TEXT
     )
     """);
   }

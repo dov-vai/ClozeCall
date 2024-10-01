@@ -1,4 +1,5 @@
 import 'package:cloze_call/data/database_helper.dart';
+import 'package:cloze_call/data/repositories/cloze_review_repository.dart';
 import 'package:cloze_call/data/repositories/config_repository.dart';
 import 'package:cloze_call/pages/language_page.dart';
 import 'package:cloze_call/pages/learn_page.dart';
@@ -13,11 +14,15 @@ void main() async {
 
   final dbHelper = DatabaseHelper();
   final configRepo = ConfigRepository(await dbHelper.database);
+  final clozeRepo = ClozeReviewRepository(await dbHelper.database);
   final clozeService = ClozeService(configRepo);
   await clozeService.initialize();
 
   runApp(MultiProvider(
-    providers: [Provider<ClozeService>(create: (_) => clozeService)],
+    providers: [
+      Provider<ClozeService>(create: (_) => clozeService),
+      Provider<ClozeReviewRepository>(create: (_) => clozeRepo)
+    ],
     child: const MyApp(),
   ));
 }

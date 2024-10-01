@@ -97,7 +97,9 @@ class ClozeService {
       String word =
           TextUtils.sanitizeWord(words[_random.nextInt(words.length)]);
 
-      if (word.isNotEmpty && randomLine != line && !randomWords.contains(word)) {
+      if (word.isNotEmpty &&
+          randomLine != line &&
+          !randomWords.contains(word)) {
         randomWords.add(word);
       }
     }

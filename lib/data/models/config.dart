@@ -11,7 +11,6 @@ class Config implements IModel {
     return {'key': key, 'value': value};
   }
 
-  @override
   factory Config.fromMap(Map<String, dynamic> data) {
     return Config(key: data['key'] as String, value: data['value'] as String);
   }
