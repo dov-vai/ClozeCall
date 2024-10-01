@@ -24,6 +24,8 @@ class _LearnPageState extends State<LearnPage> {
   var _answered = '';
   ({String text, Uint8List audio})? _ttsState;
   final _translatedCache = HashMap<String, String>();
+  int _correct = 0;
+  int _total = 0;
 
   @override
   void initState() {
@@ -76,7 +78,11 @@ class _LearnPageState extends State<LearnPage> {
   void onNext() {
     _player.stop();
     setState(() {
+      if (_answered == _cloze.answer) {
+        _correct++;
+      }
       _answered = '';
+      _total++;
       _cloze = _clozeService.getRandomCloze();
     });
   }
@@ -101,16 +107,56 @@ class _LearnPageState extends State<LearnPage> {
       body: Center(
           child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 32.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: _answered.isNotEmpty ? buildAnsweredCloze() : buildCloze(),
-        ),
+        child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+          counter(_correct, _total - _correct),
+          const SizedBox(height: 32),
+          Expanded(child: _answered.isNotEmpty ? answeredCloze() : cloze())
+        ]),
       )),
     );
   }
 
-  List<Widget> buildCloze() {
-    return [
+  Widget counter(int correct, int incorrect) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        // Correct counter
+        Row(
+          children: [
+            const Icon(Icons.check, color: Colors.green),
+            const SizedBox(width: 4),
+            Text(
+              '$correct',
+              style: const TextStyle(
+                color: Colors.green,
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(width: 16),
+        // Incorrect counter
+        Row(
+          children: [
+            const Icon(Icons.close, color: Colors.red),
+            const SizedBox(width: 4),
+            Text(
+              '$incorrect',
+              style: const TextStyle(
+                color: Colors.red,
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget cloze() {
+    return Column(children: [
       Text(_cloze.original.replaceFirst(_cloze.answer, '_____'),
           style: Theme.of(context).textTheme.headlineLarge,
           textAlign: TextAlign.center),
@@ -135,11 +181,11 @@ class _LearnPageState extends State<LearnPage> {
                 style: Theme.of(context).textTheme.titleLarge),
           ),
         )
-    ];
+    ]);
   }
 
-  List<Widget> buildAnsweredCloze() {
-    return [
+  Widget answeredCloze() {
+    return Column(children: [
       Wrap(alignment: WrapAlignment.center, children: [
         for (var word in _cloze.original.split(' '))
           Wrap(alignment: WrapAlignment.center, children: [
@@ -216,6 +262,6 @@ class _LearnPageState extends State<LearnPage> {
         style: ElevatedButton.styleFrom(minimumSize: const Size(0, 64)),
         child: Text('Next ➡️', style: Theme.of(context).textTheme.titleLarge),
       ),
-    ];
+    ]);
   }
 }
