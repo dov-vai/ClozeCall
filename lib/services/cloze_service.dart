@@ -84,6 +84,16 @@ class ClozeService {
     return _generateCloze(line);
   }
 
+  bool _containsWord(List<String> words, String word) {
+    final wordToFind = word.toLowerCase();
+    for (var word in words) {
+      if (word.toLowerCase() == wordToFind) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   Cloze _generateCloze(String line) {
     final sentences = line.split('\t');
     List<String> words = sentences[0].split(' ');
@@ -95,11 +105,11 @@ class ClozeService {
       String randomLine = _lines[_random.nextInt(_lines.length)].split('\t')[0];
       List<String> words = randomLine.split(' ');
       String word =
-          TextUtils.sanitizeWord(words[_random.nextInt(words.length)]);
+          TextUtils.removePunctuation(words[_random.nextInt(words.length)]);
 
       if (word.isNotEmpty &&
           randomLine != line &&
-          !randomWords.contains(word)) {
+          !_containsWord(randomWords, word)) {
         randomWords.add(word);
       }
     }
