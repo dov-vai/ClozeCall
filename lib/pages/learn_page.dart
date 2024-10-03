@@ -2,22 +2,25 @@ import 'dart:collection';
 import 'dart:typed_data';
 
 import 'package:audioplayers/audioplayers.dart';
-import 'package:cloze_call/services/cloze_service.dart';
+import 'package:cloze_call/services/cloze/cloze_service.dart';
+import 'package:cloze_call/services/cloze/i_cloze_service.dart';
 import 'package:cloze_call/utils/text_utils.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:edge_tts/edge_tts.dart' as edge_tts;
 import 'package:translator/translator.dart';
 
+import '../services/cloze/cloze.dart';
+
 class LearnPage extends StatefulWidget {
-  const LearnPage({super.key});
+  final IClozeService clozeService;
+
+  const LearnPage({super.key, required this.clozeService});
 
   @override
   State createState() => _LearnPageState();
 }
 
 class _LearnPageState extends State<LearnPage> {
-  late ClozeService _clozeService;
   late AudioPlayer _player;
   final _translator = GoogleTranslator();
   var _cloze = Cloze(original: '', translated: '', answer: '', words: []);
@@ -30,15 +33,14 @@ class _LearnPageState extends State<LearnPage> {
   @override
   void initState() {
     super.initState();
-    _clozeService = Provider.of<ClozeService>(context, listen: false);
     _player = AudioPlayer();
 
-    if (!_clozeService.initialized) {
+    if (!widget.clozeService.initialized) {
       Navigator.pop(context);
       return;
     }
 
-    _cloze = _clozeService.getRandomCloze();
+    _cloze = getCloze();
   }
 
   @override
@@ -68,22 +70,32 @@ class _LearnPageState extends State<LearnPage> {
     return builder.toBytes();
   }
 
-  void onSelected(String selectedWord) async {
+  Cloze getCloze() {
+    try {
+      return widget.clozeService.getRandomCloze();
+    } on ClozeServiceException {
+      Navigator.pop(context);
+    }
+    throw Exception("Unreachable");
+  }
+
+  Future<void> onSelected(String selectedWord) async {
     playTTS(_cloze.original);
     setState(() {
       _answered = selectedWord;
     });
   }
 
-  void onNext() {
-    _player.stop();
+  Future<void> onNext() async {
+    await _player.stop();
+
     setState(() {
       if (_answered == _cloze.answer) {
         _correct++;
       }
       _answered = '';
       _total++;
-      _cloze = _clozeService.getRandomCloze();
+      _cloze = getCloze();
     });
   }
 
@@ -258,9 +270,11 @@ class _LearnPageState extends State<LearnPage> {
         ),
       const SizedBox(height: 32),
       ElevatedButton(
-        onPressed: onNext,
+        onPressed: () async {
+          await onNext();
+        },
         style: ElevatedButton.styleFrom(minimumSize: const Size(0, 64)),
-        child: Text('Next ➡️', style: Theme.of(context).textTheme.titleLarge),
+        child: Text('Next', style: Theme.of(context).textTheme.titleLarge),
       ),
     ]);
   }

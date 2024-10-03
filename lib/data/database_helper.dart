@@ -18,8 +18,9 @@ class DatabaseHelper {
   Future<Database> initDb() async {
     final appDocumentsDir = await getApplicationDocumentsDirectory();
     String dbPath =
-        path.join(appDocumentsDir.path, "database", "clozeCallDb.db");
+        path.join(appDocumentsDir.path, ".ClozeCall", "clozeCallDb.db");
 
+    print(dbPath);
     if (Platform.isWindows || Platform.isLinux) {
       sqfliteFfiInit();
       var databaseFactory = databaseFactoryFfi;

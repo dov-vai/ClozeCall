@@ -1,4 +1,4 @@
-import 'package:cloze_call/services/cloze_service.dart';
+import 'package:cloze_call/services/cloze/cloze_service.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 

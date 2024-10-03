@@ -1,9 +1,14 @@
 import 'dart:io';
 import 'dart:math';
+import 'package:cloze_call/data/models/cloze_review.dart';
 import 'package:cloze_call/data/models/config.dart';
+import 'package:cloze_call/data/repositories/cloze_review_repository.dart';
 import 'package:cloze_call/data/repositories/config_repository.dart';
+import 'package:cloze_call/services/cloze/i_cloze_service.dart';
 import 'package:cloze_call/utils/text_utils.dart';
 import 'package:file_picker/file_picker.dart';
+
+import 'cloze.dart';
 
 class ClozeServiceException implements Exception {
   final String message;
@@ -15,28 +20,17 @@ class ClozeServiceException implements Exception {
   String toString() => "ClozeServiceException: $message";
 }
 
-class Cloze {
-  final String original;
-  final String translated;
-  final String answer;
-  final List<String> words;
-
-  Cloze(
-      {required this.original,
-      required this.translated,
-      required this.answer,
-      required this.words});
-}
-
-class ClozeService {
+class ClozeService implements IClozeService {
   late List<String> _lines;
   final Random _random = Random();
   bool _initialized = false;
   final ConfigRepository _config;
+  final ClozeReviewRepository _clozeRepo;
 
+  @override
   bool get initialized => _initialized;
 
-  ClozeService(this._config);
+  ClozeService(this._config, this._clozeRepo);
 
   Future<void> initialize() async {
     if (_initialized) {
@@ -76,11 +70,14 @@ class ClozeService {
     return path;
   }
 
+  @override
   Cloze getRandomCloze() {
     if (!_initialized) {
       throw ClozeServiceException("Not initialized!");
     }
     String line = _lines[_random.nextInt(_lines.length)];
+    var cloze = _generateCloze(line);
+    _clozeRepo.insert(ClozeReview.fromCloze(cloze));
     return _generateCloze(line);
   }
 
