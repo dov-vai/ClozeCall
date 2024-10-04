@@ -9,16 +9,7 @@ import 'package:cloze_call/utils/text_utils.dart';
 import 'package:file_picker/file_picker.dart';
 
 import 'cloze.dart';
-
-class ClozeServiceException implements Exception {
-  final String message;
-
-  ClozeServiceException(
-      [this.message = "An error occured in the cloze service!"]);
-
-  @override
-  String toString() => "ClozeServiceException: $message";
-}
+import 'cloze_exceptions.dart';
 
 class ClozeService implements IClozeService {
   late List<String> _lines;

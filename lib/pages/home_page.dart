@@ -36,18 +36,21 @@ class _MyHomePageState extends State<MyHomePage> {
               label: const Text("Learn"),
             ),
             const SizedBox(height: 32),
-            ElevatedButton.icon(
-                onPressed: () {
-                  // TODO: make the widget reactive to the count changes
-                  if (clozeReviewService.count != 0) {
-                    Navigator.pushNamed(context, '/review');
-                  }
-                },
-                style: ElevatedButton.styleFrom(
-                  minimumSize: const Size(double.infinity, 64),
-                ),
-                icon: const Icon(Icons.book),
-                label: Text("Review (${clozeReviewService.count} words)")),
+            ValueListenableBuilder(
+                valueListenable: clozeReviewService.countNotifier,
+                builder: (context, count, _) {
+                  return ElevatedButton.icon(
+                      onPressed: () {
+                        if (count != 0) {
+                          Navigator.pushNamed(context, '/review');
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        minimumSize: const Size(double.infinity, 64),
+                      ),
+                      icon: const Icon(Icons.book),
+                      label: Text("Review ($count words)"));
+                }),
             const SizedBox(height: 32),
             ElevatedButton.icon(
               onPressed: () {
