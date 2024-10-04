@@ -2,7 +2,6 @@ import 'dart:collection';
 import 'dart:typed_data';
 
 import 'package:audioplayers/audioplayers.dart';
-import 'package:cloze_call/services/cloze/cloze_service.dart';
 import 'package:cloze_call/services/cloze/i_cloze_service.dart';
 import 'package:cloze_call/utils/text_utils.dart';
 import 'package:flutter/material.dart';
@@ -10,6 +9,7 @@ import 'package:edge_tts/edge_tts.dart' as edge_tts;
 import 'package:translator/translator.dart';
 
 import '../services/cloze/cloze.dart';
+import '../services/cloze/cloze_exceptions.dart';
 
 class LearnPage extends StatefulWidget {
   final IClozeService clozeService;
@@ -29,6 +29,7 @@ class _LearnPageState extends State<LearnPage> {
   final _translatedCache = HashMap<String, String>();
   int _correct = 0;
   int _total = 0;
+  bool _empty = false;
 
   @override
   void initState() {
@@ -89,13 +90,23 @@ class _LearnPageState extends State<LearnPage> {
   Future<void> onNext() async {
     await _player.stop();
 
+    late Cloze cloze;
+    try {
+      cloze = getCloze();
+    } on ClozeServiceEmptyException {
+      setState(() {
+        _empty = true;
+      });
+      return;
+    }
+
     setState(() {
       if (_answered == _cloze.answer) {
         _correct++;
       }
       _answered = '';
       _total++;
-      _cloze = getCloze();
+      _cloze = cloze;
     });
   }
 
@@ -118,14 +129,47 @@ class _LearnPageState extends State<LearnPage> {
       ),
       body: Center(
           child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 32.0),
-        child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-          counter(_correct, _total - _correct),
-          const SizedBox(height: 32),
-          Expanded(child: _answered.isNotEmpty ? answeredCloze() : cloze())
-        ]),
-      )),
+              padding: const EdgeInsets.symmetric(horizontal: 32.0),
+              child: _empty ? empty() : quiz())),
     );
+  }
+
+  Widget empty() {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Icon(
+          Icons.sentiment_satisfied_alt,
+          size: 100,
+          color: Theme.of(context).textTheme.bodyLarge?.color,
+        ),
+        const SizedBox(height: 20),
+        const Text(
+          "All done!",
+          style: TextStyle(
+            fontSize: 28,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 10),
+        Text(
+          "You've completed everything for now.",
+          style: TextStyle(
+            fontSize: 16,
+            color: Colors.grey[600],
+          ),
+          textAlign: TextAlign.center,
+        ),
+      ],
+    );
+  }
+
+  Widget quiz() {
+    return Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+      counter(_correct, _total - _correct),
+      const SizedBox(height: 32),
+      Expanded(child: _answered.isNotEmpty ? answeredCloze() : cloze())
+    ]);
   }
 
   Widget counter(int correct, int incorrect) {
