@@ -56,13 +56,10 @@ jobs:
           version=$(grep '^version: ' pubspec.yaml | cut -d ' ' -f 2 | tr -d '\r')
           echo "VERSION=$version" >> $GITHUB_ENV
 
-      - name: Check if tag exists
-        id: check_tag
+      - name: Avoid duplicate tags
         run: |
-          if git rev-parse "v${{ env.VERSION }}" >/dev/null 2>&1; then
             new_version="${{ env.VERSION }}-build-${{ github.run_number }}"
             echo "VERSION=$new_version" >> $GITHUB_ENV
-          fi
 
       - name: Create release
         uses: ncipollo/release-action@v1
