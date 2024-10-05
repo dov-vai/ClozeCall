@@ -1,4 +1,5 @@
 import 'dart:collection';
+import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:audioplayers/audioplayers.dart';
@@ -6,6 +7,7 @@ import 'package:cloze_call/services/cloze/i_cloze_service.dart';
 import 'package:cloze_call/utils/text_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:edge_tts/edge_tts.dart' as edge_tts;
+import 'package:provider/provider.dart';
 import 'package:translator/translator.dart';
 
 import '../services/cloze/cloze.dart';
@@ -21,9 +23,12 @@ class LearnPage extends StatefulWidget {
 }
 
 class _LearnPageState extends State<LearnPage> {
-  late AudioPlayer _player;
+  final AudioPlayer _player = AudioPlayer();
+  final _random = Random();
   final _translator = GoogleTranslator();
-  var _cloze = Cloze(original: '', translated: '', answer: '', words: []);
+  late edge_tts.VoicesManager _voices;
+  var _cloze = Cloze(
+      original: '', translated: '', answer: '', words: [], languageCode: '');
   var _answered = '';
   ({String text, Uint8List audio})? _ttsState;
   final _translatedCache = HashMap<String, String>();
@@ -34,7 +39,7 @@ class _LearnPageState extends State<LearnPage> {
   @override
   void initState() {
     super.initState();
-    _player = AudioPlayer();
+    _voices = Provider.of<edge_tts.VoicesManager>(context, listen: false);
 
     if (!widget.clozeService.initialized) {
       Navigator.pop(context);
@@ -50,19 +55,20 @@ class _LearnPageState extends State<LearnPage> {
     super.dispose();
   }
 
-  Future<void> playTTS(String text) async {
+  Future<void> playTTS(String text, String languageCode) async {
     if (_ttsState == null || _ttsState?.text != text) {
-      var audio = await getTTS(text);
+      var audio = await getTTS(text, languageCode);
       _ttsState = (text: text, audio: audio);
     }
     await _player.play(BytesSource(_ttsState!.audio));
   }
 
-  Future<Uint8List> getTTS(String text) async {
+  Future<Uint8List> getTTS(String text, String languageCode) async {
     BytesBuilder builder = BytesBuilder();
-    // TODO: voice selection by language code
-    var communicate =
-        edge_tts.Communicate(text: text, voice: 'ru-RU-DmitryNeural');
+    // FIXME: probably not very efficient doing this every tts run
+    var voices = _voices.find(locale: languageCode);
+    var communicate = edge_tts.Communicate(
+        text: text, voice: voices[_random.nextInt(voices.length)].shortName);
     await for (var message in communicate.stream()) {
       if (message['type'] == 'audio') {
         builder.add(message['data']);
@@ -81,7 +87,7 @@ class _LearnPageState extends State<LearnPage> {
   }
 
   Future<void> onSelected(String selectedWord) async {
-    playTTS(_cloze.original);
+    playTTS(_cloze.original, _cloze.languageCode);
     setState(() {
       _answered = selectedWord;
     });
@@ -110,12 +116,13 @@ class _LearnPageState extends State<LearnPage> {
     });
   }
 
-  Future<void> onWordTooltip(String word) async {
+  Future<void> onWordTooltip(String word, String languageCode) async {
     if (_translatedCache[word] != null) {
       return;
     }
-    // TODO: language codes selection here too
-    var translation = await _translator.translate(word, from: 'ru', to: 'en');
+
+    var translation =
+        await _translator.translate(word, from: languageCode, to: 'en');
     setState(() {
       _translatedCache[word] = translation.text;
     });
@@ -248,7 +255,8 @@ class _LearnPageState extends State<LearnPage> {
             // use mouse region as hovering over the tooltip doesn't call onTrigger (hack)
             MouseRegion(
               onEnter: (_) async {
-                await onWordTooltip(TextUtils.sanitizeWord(word));
+                await onWordTooltip(
+                    TextUtils.sanitizeWord(word), _cloze.languageCode);
               },
               child: Tooltip(
                 message: _translatedCache[TextUtils.sanitizeWord(word)] ??
@@ -268,7 +276,8 @@ class _LearnPageState extends State<LearnPage> {
                 showDuration: const Duration(seconds: 2),
                 waitDuration: const Duration(milliseconds: 200),
                 onTriggered: () async {
-                  await onWordTooltip(TextUtils.sanitizeWord(word));
+                  await onWordTooltip(
+                      TextUtils.sanitizeWord(word), _cloze.languageCode);
                 },
                 child: Text(
                   word,
@@ -292,7 +301,7 @@ class _LearnPageState extends State<LearnPage> {
       IconButton(
           onPressed: () async {
             await _player.stop();
-            await playTTS(_cloze.original);
+            await playTTS(_cloze.original, _cloze.languageCode);
           },
           icon: const Icon(Icons.audiotrack)),
       for (var word in _cloze.words)

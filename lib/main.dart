@@ -5,6 +5,7 @@ import 'package:cloze_call/pages/language_page.dart';
 import 'package:cloze_call/pages/learn_page.dart';
 import 'package:cloze_call/services/cloze/cloze_review_service.dart';
 import 'package:cloze_call/services/cloze/cloze_service.dart';
+import 'package:edge_tts/edge_tts.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -20,11 +21,13 @@ void main() async {
   await clozeService.initialize();
   final clozeReviewService = ClozeReviewService(clozeRepo);
   await clozeReviewService.initialize();
+  final voiceManager = await VoicesManager.create();
 
   runApp(MultiProvider(
     providers: [
       Provider<ClozeService>(create: (_) => clozeService),
-      Provider<ClozeReviewService>(create: (_) => clozeReviewService)
+      Provider<ClozeReviewService>(create: (_) => clozeReviewService),
+      Provider<VoicesManager>(create: (_) => voiceManager)
     ],
     child: const MyApp(),
   ));

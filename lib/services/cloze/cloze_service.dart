@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 import 'package:cloze_call/data/models/cloze_review.dart';
@@ -12,7 +13,7 @@ import 'cloze.dart';
 import 'cloze_exceptions.dart';
 
 class ClozeService implements IClozeService {
-  late List<String> _lines;
+  final List<String> _lines = List.empty(growable: true);
   final Random _random = Random();
   bool _initialized = false;
   final ConfigRepository _config;
@@ -35,13 +36,25 @@ class ClozeService implements IClozeService {
       path = await pickLanguageFile();
     }
 
-    _lines = await File(path).readAsLines();
+    var lines = File(path)
+        .openRead()
+        .transform(utf8.decoder)
+        .transform(const LineSplitter());
+
+    await for (var line in lines) {
+      // filter by word length because some sentences can get too large
+      if (line.split('\t')[0].split(' ').length <= 25) {
+        _lines.add(line);
+      }
+    }
     _initialized = true;
   }
 
   Future<String> pickLanguageFile() async {
     // clear cache of previously selected language file
-    FilePicker.platform.clearTemporaryFiles();
+    if (Platform.isAndroid || Platform.isIOS){
+      FilePicker.platform.clearTemporaryFiles();
+    }
 
     FilePickerResult? result = await FilePicker.platform.pickFiles(
       dialogTitle: "Select the language file",
@@ -83,8 +96,8 @@ class ClozeService implements IClozeService {
   }
 
   Cloze _generateCloze(String line) {
-    final sentences = line.split('\t');
-    List<String> words = sentences[0].split(' ');
+    final columns = line.split('\t');
+    List<String> words = columns[0].split(' ');
     String removedWord = TextUtils.removePunctuation(
         words.removeAt(_random.nextInt(words.length)));
 
@@ -105,9 +118,10 @@ class ClozeService implements IClozeService {
     randomWords.shuffle();
 
     return Cloze(
-        original: sentences[0],
-        translated: sentences[1],
+        original: columns[0],
+        translated: columns[1],
         answer: removedWord,
-        words: randomWords);
+        words: randomWords,
+        languageCode: columns[2]);
   }
 }

@@ -20,7 +20,6 @@ class DatabaseHelper {
     String dbPath =
         path.join(appDocumentsDir.path, ".ClozeCall", "clozeCallDb.db");
 
-    print(dbPath);
     if (Platform.isWindows || Platform.isLinux) {
       sqfliteFfiInit();
       var databaseFactory = databaseFactoryFfi;
@@ -50,7 +49,8 @@ class DatabaseHelper {
       original TEXT,
       translated TEXT,
       answer TEXT UNIQUE,
-      words TEXT
+      words TEXT,
+      language_code TEXT
     )
     """);
   }
