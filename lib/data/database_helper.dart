@@ -41,8 +41,9 @@ class DatabaseHelper {
     CREATE TABLE IF NOT EXISTS config(
       key TEXT PRIMARY KEY,
       value TEXT
-    );
-    
+    )
+    """);
+    await db.execute("""
     CREATE TABLE IF NOT EXISTS review(
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       timestamp INTEGER,
