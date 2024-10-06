@@ -29,11 +29,11 @@ class ClozeService implements IClozeService {
       return;
     }
 
-    var path = await _config.get('language_file') ?? await pickLanguageFile();
+    var path = await _config.get('language_file');
 
     // file location moved?
-    if (!await File(path).exists()) {
-      path = await pickLanguageFile();
+    if (path == null || !await File(path).exists()) {
+      return;
     }
 
     var lines = File(path)
@@ -52,7 +52,7 @@ class ClozeService implements IClozeService {
 
   Future<String> pickLanguageFile() async {
     // clear cache of previously selected language file
-    if (Platform.isAndroid || Platform.isIOS){
+    if (Platform.isAndroid || Platform.isIOS) {
       FilePicker.platform.clearTemporaryFiles();
     }
 

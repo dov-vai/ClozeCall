@@ -1,4 +1,6 @@
 import 'package:cloze_call/services/cloze/cloze_review_service.dart';
+import 'package:cloze_call/services/cloze/cloze_service.dart';
+import 'package:cloze_call/services/cloze/i_cloze_service.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -14,6 +16,13 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     var clozeReviewService =
         Provider.of<ClozeReviewService>(context, listen: false);
+    var clozeService = Provider.of<ClozeService>(context, listen: false);
+
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!clozeService.initialized) {
+        await uninitializedDialog(clozeService);
+      }
+    });
 
     return Scaffold(
       appBar: AppBar(
@@ -65,5 +74,25 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
       )),
     );
+  }
+
+  Future<void> uninitializedDialog(ClozeService service) async {
+    return showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) {
+          return AlertDialog(
+              title: const Text("Language file not found"),
+              content: const Text("Please select a language file."),
+              actions: <Widget>[
+                TextButton(
+                    onPressed: () async {
+                      Navigator.of(context).pop();
+                      await service.pickLanguageFile();
+                      await service.initialize();
+                    },
+                    child: const Text("On it!"))
+              ]);
+        });
   }
 }
