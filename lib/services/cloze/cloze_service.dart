@@ -68,10 +68,12 @@ class ClozeService implements IClozeService {
       throw ClozeServiceException("No file selected!");
     }
 
+    return path;
+  }
+
+  Future<void> setLanguageFile(String path) async {
     await _config.insert(Config(key: 'language_file', value: path));
     _initialized = false;
-
-    return path;
   }
 
   @override
