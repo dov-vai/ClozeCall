@@ -22,6 +22,10 @@ class ClozeService implements IClozeService {
   @override
   bool get initialized => _initialized;
 
+  Future<String?> get languageFilePath async {
+    return await _config.get('language_file');
+  }
+
   ClozeService(this._config, this._clozeRepo);
 
   Future<void> initialize() async {

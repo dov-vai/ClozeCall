@@ -8,7 +8,7 @@ class FileDownloader {
   Dio dio = Dio();
 
   Future<String?> downloadFile(String url, String fileName,
-      {Function(int, int)? onReceiveProgress}) async {
+      {Function(int received, int total)? onReceiveProgress}) async {
     try {
       Directory appDocDir = await getApplicationDocumentsDirectory();
       String savePath = '${appDocDir.path}/.ClozeCall/files/$fileName';
@@ -22,9 +22,5 @@ class FileDownloader {
       }
     }
     return null;
-  }
-
-  String getFileNameFromUrl(String url) {
-    return Uri.parse(url).pathSegments.last;
   }
 }
