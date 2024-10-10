@@ -87,8 +87,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 TextButton(
                     onPressed: () async {
                       Navigator.of(context).pop();
-                      await service.pickLanguageFile();
-                      await service.initialize();
+                      Navigator.pushNamed(context, '/language');
                     },
                     child: const Text("On it!"))
               ]);
