@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:cloze_call/data/enums/language.dart';
 import 'package:cloze_call/services/cloze/cloze_service.dart';
 import 'package:cloze_call/utils/file_downloader.dart';
@@ -41,10 +43,12 @@ class _LanguagePageState extends State<LanguagePage> {
                   const SizedBox(height: 64),
                   ElevatedButton.icon(
                     onPressed: () async {
-                      var path = await _clozeService.pickLanguageFile();
+                      final path = await _clozeService.pickLanguageFile();
+                      progressDialog();
                       await _clozeService.setLanguageFile(path);
                       await _clozeService.initialize();
                       refreshLanguageFilePath();
+                      Navigator.of(context).pop();
                     },
                     style: ElevatedButton.styleFrom(
                         minimumSize: const Size(double.infinity, 64)),
@@ -72,12 +76,17 @@ class _LanguagePageState extends State<LanguagePage> {
             child: ElevatedButton.icon(
                 onPressed: () async {
                   progressDialog();
-                  var fileName = UrlUtils.getFileNameFromUrl(language.url);
-                  var path = await _fileDownloader.downloadFile(
-                      language.url, fileName);
+                  final fileName = UrlUtils.getFileNameFromUrl(language.url);
 
-                  if (path != null) {
-                    await _clozeService.setLanguageFile(path);
+                  String? filePath =
+                      path.join(PathManager.instance.filesDir, fileName);
+                  if (!await File(filePath).exists()) {
+                    filePath = await _fileDownloader.downloadFile(
+                        language.url, fileName);
+                  }
+
+                  if (filePath != null) {
+                    await _clozeService.setLanguageFile(filePath);
                     await _clozeService.initialize();
                     refreshLanguageFilePath();
                   }
@@ -120,7 +129,7 @@ class _LanguagePageState extends State<LanguagePage> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text('Downloading language'),
+                  Text('Loading language'),
                   SizedBox(height: 16),
                   LinearProgressIndicator()
                 ],
