@@ -13,17 +13,18 @@ import 'cloze.dart';
 import 'cloze_exceptions.dart';
 
 class ClozeService implements IClozeService {
-  final List<String> _lines = List.empty(growable: true);
+  List<String> _lines = List.empty(growable: true);
   final Random _random = Random();
   bool _initialized = false;
   final ConfigRepository _config;
   final ClozeReviewRepository _clozeRepo;
+  final _languageFileKey = 'language_file';
 
   @override
   bool get initialized => _initialized;
 
   Future<String?> get languageFilePath async {
-    return await _config.get('language_file');
+    return await _config.get(_languageFileKey);
   }
 
   ClozeService(this._config, this._clozeRepo);
@@ -33,12 +34,14 @@ class ClozeService implements IClozeService {
       return;
     }
 
-    var path = await _config.get('language_file');
+    var path = await _config.get(_languageFileKey);
 
     // file location moved?
     if (path == null || !await File(path).exists()) {
       return;
     }
+
+    _lines = List.empty(growable: true);
 
     var lines = File(path)
         .openRead()
@@ -76,7 +79,7 @@ class ClozeService implements IClozeService {
   }
 
   Future<void> setLanguageFile(String path) async {
-    await _config.insert(Config(key: 'language_file', value: path));
+    await _config.insert(Config(key: _languageFileKey, value: path));
     _initialized = false;
   }
 
