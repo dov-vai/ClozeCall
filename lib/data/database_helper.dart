@@ -1,8 +1,8 @@
 import 'dart:io';
 
+import 'package:cloze_call/utils/path_manager.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:path/path.dart' as path;
-import 'package:path_provider/path_provider.dart';
 
 class DatabaseHelper {
   Database? _db;
@@ -16,9 +16,7 @@ class DatabaseHelper {
   }
 
   Future<Database> initDb() async {
-    final appDocumentsDir = await getApplicationDocumentsDirectory();
-    String dbPath =
-        path.join(appDocumentsDir.path, ".ClozeCall", "clozeCallDb.db");
+    String dbPath = path.join(PathManager.instance.appDir, "clozeCallDb.db");
 
     if (Platform.isWindows || Platform.isLinux) {
       sqfliteFfiInit();

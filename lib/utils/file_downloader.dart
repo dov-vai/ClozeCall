@@ -1,8 +1,8 @@
 import 'dart:async';
-import 'dart:io';
+import 'package:cloze_call/utils/path_manager.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
-import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart' as path;
 
 class FileDownloader {
   Dio dio = Dio();
@@ -10,8 +10,7 @@ class FileDownloader {
   Future<String?> downloadFile(String url, String fileName,
       {Function(int received, int total)? onReceiveProgress}) async {
     try {
-      Directory appDocDir = await getApplicationDocumentsDirectory();
-      String savePath = '${appDocDir.path}/.ClozeCall/files/$fileName';
+      String savePath = path.join(PathManager.instance.filesDir, fileName);
 
       await dio.download(url, savePath, onReceiveProgress: onReceiveProgress);
 

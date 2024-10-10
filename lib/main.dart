@@ -5,6 +5,7 @@ import 'package:cloze_call/pages/language_page.dart';
 import 'package:cloze_call/pages/learn_page.dart';
 import 'package:cloze_call/services/cloze/cloze_review_service.dart';
 import 'package:cloze_call/services/cloze/cloze_service.dart';
+import 'package:cloze_call/utils/path_manager.dart';
 import 'package:edge_tts/edge_tts.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -13,7 +14,7 @@ import 'pages/home_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
+  await PathManager.instance.initialize();
   final dbHelper = DatabaseHelper();
   final configRepo = ConfigRepository(await dbHelper.database);
   final clozeRepo = ClozeReviewRepository(await dbHelper.database);

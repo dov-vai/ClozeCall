@@ -1,9 +1,11 @@
 import 'package:cloze_call/data/enums/language.dart';
 import 'package:cloze_call/services/cloze/cloze_service.dart';
 import 'package:cloze_call/utils/file_downloader.dart';
+import 'package:cloze_call/utils/path_manager.dart';
 import 'package:cloze_call/utils/url_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:path/path.dart' as path;
 
 class LanguagePage extends StatefulWidget {
   const LanguagePage({super.key});
@@ -89,11 +91,10 @@ class _LanguagePageState extends State<LanguagePage> {
   }
 
   Icon? isLanguageSelectedIcon(Language language) {
-    // FIXME: get rid of these path hardcodes throughout the code
-    final path =
-        ".ClozeCall/files/${UrlUtils.getFileNameFromUrl(language.url)}";
+    final filePath = path.join(PathManager.instance.filesDir,
+        UrlUtils.getFileNameFromUrl(language.url));
 
-    if (_languageFilePath != null && _languageFilePath!.contains(path)) {
+    if (_languageFilePath != null && _languageFilePath!.contains(filePath)) {
       return const Icon(Icons.check);
     }
 
@@ -102,7 +103,7 @@ class _LanguagePageState extends State<LanguagePage> {
 
   Icon isCustomLanguageSelectedIcon() {
     if (_languageFilePath != null &&
-        !_languageFilePath!.contains(".ClozeCall/files/")) {
+        !_languageFilePath!.contains(PathManager.instance.filesDir)) {
       return const Icon(Icons.check);
     }
     return const Icon(Icons.file_open);
@@ -114,12 +115,12 @@ class _LanguagePageState extends State<LanguagePage> {
         barrierDismissible: false,
         builder: (context) {
           return const AlertDialog(
-              title: Text("Please wait"),
+              title: Text('Please wait'),
               content: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text("Downloading language"),
+                  Text('Downloading language'),
                   SizedBox(height: 16),
                   LinearProgressIndicator()
                 ],
