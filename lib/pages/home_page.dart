@@ -44,6 +44,17 @@ class _MyHomePageState extends State<MyHomePage> {
               label: const Text("Learn"),
             ),
             const SizedBox(height: 32),
+            ElevatedButton.icon(
+              onPressed: () {
+                Navigator.pushNamed(context, '/handsfree');
+              },
+              style: ElevatedButton.styleFrom(
+                minimumSize: const Size(double.infinity, 64),
+              ),
+              icon: const Icon(Icons.headphones),
+              label: const Text("Hands-Free"),
+            ),
+            const SizedBox(height: 32),
             ValueListenableBuilder(
                 valueListenable: clozeReviewService.countNotifier,
                 builder: (context, count, _) {

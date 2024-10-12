@@ -58,6 +58,8 @@ class MyApp extends StatelessWidget {
         '/learn': (context) => LearnPage(clozeService: clozeService),
         '/language': (context) => const LanguagePage(),
         '/review': (context) => LearnPage(clozeService: clozeReviewService),
+        '/handsfree': (context) =>
+            LearnPage(clozeService: clozeService, handsFree: true)
       },
     );
   }

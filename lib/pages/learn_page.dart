@@ -15,8 +15,9 @@ import '../services/cloze/cloze_exceptions.dart';
 
 class LearnPage extends StatefulWidget {
   final IClozeService clozeService;
-
-  const LearnPage({super.key, required this.clozeService});
+  final bool handsFree;
+  const LearnPage(
+      {super.key, required this.clozeService, this.handsFree = false});
 
   @override
   State createState() => _LearnPageState();
@@ -35,6 +36,8 @@ class _LearnPageState extends State<LearnPage> {
   int _correct = 0;
   int _total = 0;
   bool _empty = false;
+  bool _stopped = false;
+  int _timeLeft = 0;
 
   @override
   void initState() {
@@ -47,12 +50,38 @@ class _LearnPageState extends State<LearnPage> {
     }
 
     _cloze = getCloze();
+
+    if (widget.handsFree) {
+      handsFreeLoop();
+    }
   }
 
   @override
   void dispose() {
     _player.dispose();
+    _stopped = true;
     super.dispose();
+  }
+
+  Future<void> wait(int seconds) async {
+    for (int i = seconds; i >= 0 && !_stopped; i--) {
+      setState(() {
+        _timeLeft = i;
+      });
+      await Future.delayed(const Duration(seconds: 1));
+    }
+  }
+
+  Future<void> handsFreeLoop() async {
+    while (!_stopped) {
+      // TODO: timer options for the user
+      await wait(20);
+      if (_stopped) break;
+      onSelected(_cloze.answer);
+      await wait(10);
+      if (_stopped) break;
+      onNext();
+    }
   }
 
   Future<void> playTTS(String text, String languageCode) async {
@@ -173,10 +202,22 @@ class _LearnPageState extends State<LearnPage> {
 
   Widget quiz() {
     return Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-      counter(_correct, _total - _correct),
+      !widget.handsFree
+          ? counter(_correct, _total - _correct)
+          : timer(_timeLeft),
       const SizedBox(height: 32),
       Expanded(child: _answered.isNotEmpty ? answeredCloze() : cloze())
     ]);
+  }
+
+  Widget timer(int time) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Text("$time",
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18))
+      ],
+    );
   }
 
   Widget counter(int correct, int incorrect) {
@@ -236,7 +277,9 @@ class _LearnPageState extends State<LearnPage> {
           padding: const EdgeInsets.symmetric(vertical: 8.0),
           child: ElevatedButton(
             onPressed: () {
-              onSelected(word);
+              if (!widget.handsFree) {
+                onSelected(word);
+              }
             },
             style: ElevatedButton.styleFrom(
                 minimumSize: const Size(double.infinity, 64)),
@@ -308,9 +351,7 @@ class _LearnPageState extends State<LearnPage> {
         Padding(
           padding: const EdgeInsets.symmetric(vertical: 8.0),
           child: ElevatedButton(
-              onPressed: () {
-                onSelected(word);
-              },
+              onPressed: () {},
               style: ElevatedButton.styleFrom(
                   minimumSize: const Size(double.infinity, 64),
                   backgroundColor: word == _cloze.answer
@@ -322,13 +363,17 @@ class _LearnPageState extends State<LearnPage> {
                   style: Theme.of(context).textTheme.titleLarge)),
         ),
       const SizedBox(height: 32),
-      ElevatedButton(
-        onPressed: () async {
-          await onNext();
-        },
-        style: ElevatedButton.styleFrom(minimumSize: const Size(0, 64)),
-        child: Text('Next', style: Theme.of(context).textTheme.titleLarge),
-      ),
+      if (!widget.handsFree) nextButton()
     ]);
+  }
+
+  Widget nextButton() {
+    return ElevatedButton(
+      onPressed: () async {
+        await onNext();
+      },
+      style: ElevatedButton.styleFrom(minimumSize: const Size(0, 64)),
+      child: Text('Next', style: Theme.of(context).textTheme.titleLarge),
+    );
   }
 }
