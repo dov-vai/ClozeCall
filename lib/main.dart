@@ -28,7 +28,8 @@ void main() async {
     providers: [
       Provider<ClozeService>(create: (_) => clozeService),
       Provider<ClozeReviewService>(create: (_) => clozeReviewService),
-      Provider<VoicesManager>(create: (_) => voiceManager)
+      Provider<VoicesManager>(create: (_) => voiceManager),
+      Provider<ConfigRepository>(create: (_) => configRepo),
     ],
     child: const MyApp(),
   ));

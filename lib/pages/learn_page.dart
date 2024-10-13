@@ -3,6 +3,7 @@ import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:audioplayers/audioplayers.dart';
+import 'package:cloze_call/data/repositories/config_repository.dart';
 import 'package:cloze_call/services/cloze/i_cloze_service.dart';
 import 'package:cloze_call/utils/text_utils.dart';
 import 'package:flutter/material.dart';
@@ -10,6 +11,7 @@ import 'package:edge_tts/edge_tts.dart' as edge_tts;
 import 'package:provider/provider.dart';
 import 'package:translator/translator.dart';
 
+import '../data/models/config.dart';
 import '../services/cloze/cloze.dart';
 import '../services/cloze/cloze_exceptions.dart';
 
@@ -38,22 +40,43 @@ class _LearnPageState extends State<LearnPage> {
   bool _empty = false;
   bool _stopped = false;
   int _timeLeft = 0;
+  int _thinkingSeconds = 20;
+  int _reviewSeconds = 10;
+  late bool _handsfreeOptionsConfirmed;
+  late ConfigRepository _config;
 
   @override
   void initState() {
     super.initState();
     _voices = Provider.of<edge_tts.VoicesManager>(context, listen: false);
+    _config = Provider.of<ConfigRepository>(context, listen: false);
 
     if (!widget.clozeService.initialized) {
       Navigator.pop(context);
       return;
     }
 
+    _config.get('thinking_seconds').then((value) {
+      final parsed = int.tryParse(value ?? '');
+      if (parsed != null) {
+        setState(() {
+          _thinkingSeconds = parsed;
+        });
+      }
+    });
+
+    _config.get('review_seconds').then((value) {
+      final parsed = int.tryParse(value ?? '');
+      if (parsed != null) {
+        setState(() {
+          _reviewSeconds = parsed;
+        });
+      }
+    });
+
     _cloze = getCloze();
 
-    if (widget.handsFree) {
-      handsFreeLoop();
-    }
+    _handsfreeOptionsConfirmed = !widget.handsFree;
   }
 
   @override
@@ -75,10 +98,10 @@ class _LearnPageState extends State<LearnPage> {
   Future<void> handsFreeLoop() async {
     while (!_stopped) {
       // TODO: timer options for the user
-      await wait(20);
+      await wait(_thinkingSeconds);
       if (_stopped) break;
       onSelected(_cloze.answer);
-      await wait(10);
+      await wait(_reviewSeconds);
       if (_stopped) break;
       onNext();
     }
@@ -166,7 +189,11 @@ class _LearnPageState extends State<LearnPage> {
       body: Center(
           child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 32.0),
-              child: _empty ? empty() : quiz())),
+              child: !_handsfreeOptionsConfirmed
+                  ? handsFreeOptions()
+                  : _empty
+                      ? empty()
+                      : quiz())),
     );
   }
 
@@ -374,6 +401,83 @@ class _LearnPageState extends State<LearnPage> {
       },
       style: ElevatedButton.styleFrom(minimumSize: const Size(0, 64)),
       child: Text('Next', style: Theme.of(context).textTheme.titleLarge),
+    );
+  }
+
+  // TODO: starting to messy, refactor into more classes
+  Widget handsFreeOptions() {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Text("Hands-free options",
+            style: Theme.of(context).textTheme.titleLarge),
+        const SizedBox(height: 32),
+        Text("Thinking time (seconds)",
+            style: Theme.of(context).textTheme.bodyLarge),
+        numberSelect(_thinkingSeconds, (value) {
+          setState(() {
+            _thinkingSeconds = value;
+          });
+        }),
+        const SizedBox(height: 32),
+        Text("Review time (seconds)",
+            style: Theme.of(context).textTheme.bodyLarge),
+        numberSelect(_reviewSeconds, (value) {
+          setState(() {
+            _reviewSeconds = value;
+          });
+        }),
+        const SizedBox(height: 64),
+        ElevatedButton(
+            onPressed: () async {
+              setState(() {
+                _handsfreeOptionsConfirmed = true;
+              });
+
+              await _config.insert(Config(
+                  key: 'thinking_seconds', value: _thinkingSeconds.toString()));
+              await _config.insert(Config(
+                  key: 'review_seconds', value: _reviewSeconds.toString()));
+
+              handsFreeLoop();
+            },
+            style: ElevatedButton.styleFrom(minimumSize: const Size(0, 64)),
+            child: const Text("Let's go!"))
+      ],
+    );
+  }
+
+  Widget numberSelect(int value, void Function(int) onChanged) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        IconButton(
+          icon: const Icon(Icons.remove),
+          onPressed: () {
+            if (value > 0) onChanged(value - 1);
+          },
+        ),
+        SizedBox(
+          width: 100,
+          child: TextField(
+            textAlign: TextAlign.center,
+            keyboardType: TextInputType.number,
+            controller: TextEditingController(text: value.toString()),
+            onChanged: (value) {
+              onChanged(int.tryParse(value) ?? 0);
+            },
+            decoration: const InputDecoration(
+              border: OutlineInputBorder(),
+            ),
+          ),
+        ),
+        IconButton(
+          icon: const Icon(Icons.add),
+          onPressed: () {
+            onChanged(value + 1);
+          },
+        ),
+      ],
     );
   }
 }
