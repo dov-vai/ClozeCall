@@ -151,7 +151,7 @@ class _LearnPageState extends State<LearnPage> {
           .addForReview(_cloze.copyWith(rank: _cloze.rank.increment()));
     } else {
       await widget.clozeService
-          .addForReview(_cloze.copyWith(rank: _cloze.rank.decrement()));
+          .addForReview(_cloze.copyWith(rank: Rank.zero));
     }
 
     playTTS(_cloze.original, _cloze.languageCode);
