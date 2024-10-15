@@ -1,4 +1,4 @@
-import 'package:cloze_call/data/models/cloze_review.dart';
+import 'package:cloze_call/data/models/cloze.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 class ClozeReviewRepository {
@@ -7,7 +7,7 @@ class ClozeReviewRepository {
 
   ClozeReviewRepository(this._db);
 
-  Future<void> insert(ClozeReview cloze) async {
+  Future<void> insert(Cloze cloze) async {
     await _db.insert(
       _tableName,
       cloze.toMap(),
@@ -15,20 +15,20 @@ class ClozeReviewRepository {
     );
   }
 
-  Future<ClozeReview?> get(int id) async {
+  Future<Cloze?> get(int id) async {
     final values =
         await _db.query(_tableName, where: 'id = ?', whereArgs: [id]);
 
     final value = values.firstOrNull;
 
     if (value != null) {
-      return ClozeReview.fromMap(value);
+      return Cloze.fromMap(value);
     }
 
     return null;
   }
 
-  Future<void> update(ClozeReview cloze) async {
+  Future<void> update(Cloze cloze) async {
     await _db.update(
       _tableName,
       cloze.toMap(),
@@ -45,9 +45,9 @@ class ClozeReviewRepository {
     );
   }
 
-  Future<List<ClozeReview>> entries() async {
+  Future<List<Cloze>> entries() async {
     final maps = await _db.query(_tableName);
 
-    return [for (final data in maps) ClozeReview.fromMap(data)];
+    return [for (final data in maps) Cloze.fromMap(data)];
   }
 }

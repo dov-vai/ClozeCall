@@ -11,8 +11,9 @@ import 'package:edge_tts/edge_tts.dart' as edge_tts;
 import 'package:provider/provider.dart';
 import 'package:translator/translator.dart';
 
+import '../data/enums/rank.dart';
+import '../data/models/cloze.dart';
 import '../data/models/config.dart';
-import '../services/cloze/cloze.dart';
 import '../services/cloze/cloze_exceptions.dart';
 
 class LearnPage extends StatefulWidget {
@@ -31,7 +32,13 @@ class _LearnPageState extends State<LearnPage> {
   final _translator = GoogleTranslator();
   late edge_tts.VoicesManager _voices;
   var _cloze = Cloze(
-      original: '', translated: '', answer: '', words: [], languageCode: '');
+      timestamp: DateTime.now().toUtc(),
+      original: '',
+      translated: '',
+      answer: '',
+      words: [],
+      languageCode: '',
+      rank: Rank.zero);
   var _answered = '';
   ({String text, Uint8List audio})? _ttsState;
   final _translatedCache = HashMap<String, String>();
@@ -139,6 +146,14 @@ class _LearnPageState extends State<LearnPage> {
   }
 
   Future<void> onSelected(String selectedWord) async {
+    if (selectedWord == _cloze.answer) {
+      await widget.clozeService
+          .addForReview(_cloze.copyWith(rank: _cloze.rank.increment()));
+    } else {
+      await widget.clozeService
+          .addForReview(_cloze.copyWith(rank: _cloze.rank.decrement()));
+    }
+
     playTTS(_cloze.original, _cloze.languageCode);
     setState(() {
       _answered = selectedWord;

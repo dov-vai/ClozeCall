@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
-import 'package:cloze_call/data/models/cloze_review.dart';
+import 'package:cloze_call/data/models/cloze.dart';
 import 'package:cloze_call/data/models/config.dart';
 import 'package:cloze_call/data/repositories/cloze_review_repository.dart';
 import 'package:cloze_call/data/repositories/config_repository.dart';
@@ -9,7 +9,7 @@ import 'package:cloze_call/services/cloze/i_cloze_service.dart';
 import 'package:cloze_call/utils/text_utils.dart';
 import 'package:file_picker/file_picker.dart';
 
-import 'cloze.dart';
+import '../../data/enums/rank.dart';
 import 'cloze_exceptions.dart';
 
 class ClozeService implements IClozeService {
@@ -89,8 +89,7 @@ class ClozeService implements IClozeService {
       throw ClozeServiceException("Not initialized!");
     }
     String line = _lines[_random.nextInt(_lines.length)];
-    var cloze = _generateCloze(line);
-    _clozeRepo.insert(ClozeReview.fromCloze(cloze));
+
     return _generateCloze(line);
   }
 
@@ -102,6 +101,11 @@ class ClozeService implements IClozeService {
       }
     }
     return false;
+  }
+
+  @override
+  Future<void> addForReview(Cloze cloze) async {
+    await _clozeRepo.insert(cloze);
   }
 
   Cloze _generateCloze(String line) {
@@ -127,10 +131,12 @@ class ClozeService implements IClozeService {
     randomWords.shuffle();
 
     return Cloze(
+        timestamp: DateTime.now().toUtc(),
         original: columns[0],
         translated: columns[1],
         answer: removedWord,
         words: randomWords,
-        languageCode: columns[2]);
+        languageCode: columns[2],
+        rank: Rank.zero);
   }
 }

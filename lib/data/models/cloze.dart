@@ -1,8 +1,8 @@
 import 'package:cloze_call/data/models/i_model.dart';
 
-import '../../services/cloze/cloze.dart';
+import '../enums/rank.dart';
 
-class ClozeReview implements IModel {
+class Cloze implements IModel {
   final int? id;
   final DateTime timestamp;
   final String original;
@@ -10,15 +10,17 @@ class ClozeReview implements IModel {
   final String answer;
   final List<String> words;
   final String languageCode;
+  final Rank rank;
 
-  ClozeReview(
+  Cloze(
       {this.id,
       required this.timestamp,
       required this.original,
       required this.translated,
       required this.answer,
       required this.words,
-      required this.languageCode});
+      required this.languageCode,
+      required this.rank});
 
   @override
   Map<String, dynamic> toMap() {
@@ -30,11 +32,12 @@ class ClozeReview implements IModel {
       'answer': answer,
       'words': words.join(','),
       'language_code': languageCode,
+      'rank': rank.index,
     };
   }
 
-  factory ClozeReview.fromMap(Map<String, dynamic> data) {
-    return ClozeReview(
+  factory Cloze.fromMap(Map<String, dynamic> data) {
+    return Cloze(
         id: data['id'] as int?,
         timestamp: DateTime.fromMillisecondsSinceEpoch(data['timestamp'] as int,
             isUtc: true),
@@ -42,34 +45,27 @@ class ClozeReview implements IModel {
         translated: data['translated'] as String,
         answer: data['answer'] as String,
         words: (data['words'] as String).split(','),
-        languageCode: data['language_code'] as String);
+        languageCode: data['language_code'] as String,
+        rank: Rank.get(data['rank'] as int));
   }
 
-  factory ClozeReview.fromCloze(Cloze cloze) {
-    return ClozeReview(
-        timestamp: DateTime.now().toUtc(),
-        original: cloze.original,
-        translated: cloze.translated,
-        answer: cloze.answer,
-        words: cloze.words,
-        languageCode: cloze.languageCode);
-  }
-
-  ClozeReview copyWith(
+  Cloze copyWith(
       {int? id,
       DateTime? timestamp,
       String? original,
       String? translated,
       String? answer,
       List<String>? words,
-      String? languageCode}) {
-    return ClozeReview(
+      String? languageCode,
+      Rank? rank}) {
+    return Cloze(
         id: id ?? this.id,
         timestamp: timestamp ?? this.timestamp,
         original: original ?? this.original,
         translated: translated ?? this.translated,
         answer: answer ?? this.answer,
         words: words ?? this.words,
-        languageCode: languageCode ?? this.languageCode);
+        languageCode: languageCode ?? this.languageCode,
+        rank: rank ?? this.rank);
   }
 }

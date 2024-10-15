@@ -1,15 +1,14 @@
 import 'dart:math';
 
-import 'package:cloze_call/data/models/cloze_review.dart';
+import 'package:cloze_call/data/models/cloze.dart';
 import 'package:cloze_call/data/repositories/cloze_review_repository.dart';
 import 'package:cloze_call/services/cloze/i_cloze_service.dart';
 import 'package:flutter/cupertino.dart';
 
-import 'cloze.dart';
 import 'cloze_exceptions.dart';
 
 class ClozeReviewService implements IClozeService {
-  final List<ClozeReview> _clozes = List.empty(growable: true);
+  final List<Cloze> _clozes = List.empty(growable: true);
   final ClozeReviewRepository _clozeRepo;
   bool _initialized = false;
   final Random _random = Random();
@@ -26,9 +25,8 @@ class ClozeReviewService implements IClozeService {
     var clozes = await _clozeRepo.entries();
     var now = DateTime.now().toUtc();
 
-    // TODO: better review algorithm
     for (var cloze in clozes) {
-      if (now.difference(cloze.timestamp).inDays >= 2) {
+      if (now.difference(cloze.timestamp).inDays >= cloze.rank.days) {
         _clozes.add(cloze);
       }
     }
@@ -52,8 +50,13 @@ class ClozeReviewService implements IClozeService {
       countNotifier.value = _clozes.length;
     });
 
-    _clozeRepo.update(cloze.copyWith(timestamp: DateTime.now().toUtc()));
-    return Cloze.fromClozeReview(cloze);
+    return cloze;
+  }
+
+  // should have it's rank increased/decreased depending whether it was answered correctly or not
+  @override
+  Future<void> addForReview(Cloze cloze) async {
+    await _clozeRepo.update(cloze.copyWith(timestamp: DateTime.now().toUtc()));
   }
 
   void _isInitialized() {

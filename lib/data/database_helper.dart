@@ -49,7 +49,8 @@ class DatabaseHelper {
       translated TEXT,
       answer TEXT UNIQUE,
       words TEXT,
-      language_code TEXT
+      language_code TEXT,
+      rank INTEGER
     )
     """);
   }
