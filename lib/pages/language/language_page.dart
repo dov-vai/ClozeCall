@@ -1,6 +1,6 @@
+import 'dart:convert';
 import 'dart:io';
 
-import 'package:cloze_call/data/enums/language.dart';
 import 'package:cloze_call/services/cloze/cloze_service.dart';
 import 'package:cloze_call/utils/file_downloader.dart';
 import 'package:cloze_call/utils/path_manager.dart';
@@ -8,6 +8,9 @@ import 'package:cloze_call/utils/url_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:path/path.dart' as path;
+import 'package:http/http.dart' as http;
+
+import 'language.dart';
 
 class LanguagePage extends StatefulWidget {
   const LanguagePage({super.key});
@@ -20,11 +23,15 @@ class _LanguagePageState extends State<LanguagePage> {
   final fileDownloader = FileDownloader();
   late ClozeService clozeService;
   String? languageFilePath;
+  List<Language> languages = [];
+  bool isLoading = true;
+
   @override
   void initState() {
     super.initState();
     clozeService = Provider.of<ClozeService>(context, listen: false);
     refreshLanguageFilePath();
+    fetchLanguages();
   }
 
   @override
@@ -39,7 +46,7 @@ class _LanguagePageState extends State<LanguagePage> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  languages(),
+                  languageList(),
                   const SizedBox(height: 64),
                   ElevatedButton.icon(
                     onPressed: () async {
@@ -68,9 +75,28 @@ class _LanguagePageState extends State<LanguagePage> {
     });
   }
 
-  Widget languages() {
+  Future<void> fetchLanguages() async {
+    const languagesUrl =
+        "https://github.com/dov-vai/ClozeCall-Languages/raw/refs/heads/main/languages.json";
+    final response = await http.get(Uri.parse(languagesUrl));
+    if (response.statusCode == 200) {
+      final List<dynamic> jsonList = jsonDecode(response.body);
+      setState(() {
+        languages = jsonList.map((json) => Language.fromJson(json)).toList();
+        isLoading = false;
+      });
+    } else {
+      throw Exception('Failed to load languages');
+    }
+  }
+
+  Widget languageList() {
+    if (isLoading){
+      return const Center(child: CircularProgressIndicator());
+    }
+
     return Column(children: [
-      for (var language in Language.values)
+      for (var language in languages)
         Padding(
             padding: const EdgeInsets.symmetric(vertical: 8),
             child: ElevatedButton.icon(

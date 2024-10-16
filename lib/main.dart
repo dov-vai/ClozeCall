@@ -1,7 +1,7 @@
 import 'package:cloze_call/data/database_helper.dart';
 import 'package:cloze_call/data/repositories/cloze_review_repository.dart';
 import 'package:cloze_call/data/repositories/config_repository.dart';
-import 'package:cloze_call/pages/language_page.dart';
+import 'package:cloze_call/pages/language/language_page.dart';
 import 'package:cloze_call/pages/learn/learn_page.dart';
 import 'package:cloze_call/services/cloze/cloze_review_service.dart';
 import 'package:cloze_call/services/cloze/cloze_service.dart';
