@@ -17,13 +17,13 @@ class LanguagePage extends StatefulWidget {
 }
 
 class _LanguagePageState extends State<LanguagePage> {
-  final _fileDownloader = FileDownloader();
-  late ClozeService _clozeService;
-  String? _languageFilePath;
+  final fileDownloader = FileDownloader();
+  late ClozeService clozeService;
+  String? languageFilePath;
   @override
   void initState() {
     super.initState();
-    _clozeService = Provider.of<ClozeService>(context, listen: false);
+    clozeService = Provider.of<ClozeService>(context, listen: false);
     refreshLanguageFilePath();
   }
 
@@ -43,10 +43,10 @@ class _LanguagePageState extends State<LanguagePage> {
                   const SizedBox(height: 64),
                   ElevatedButton.icon(
                     onPressed: () async {
-                      final path = await _clozeService.pickLanguageFile();
+                      final path = await clozeService.pickLanguageFile();
                       progressDialog();
-                      await _clozeService.setLanguageFile(path);
-                      await _clozeService.initialize();
+                      await clozeService.setLanguageFile(path);
+                      await clozeService.initialize();
                       refreshLanguageFilePath();
                       Navigator.of(context).pop();
                     },
@@ -61,9 +61,9 @@ class _LanguagePageState extends State<LanguagePage> {
   }
 
   void refreshLanguageFilePath() {
-    _clozeService.languageFilePath.then((path) {
+    clozeService.languageFilePath.then((path) {
       setState(() {
-        _languageFilePath = path;
+        languageFilePath = path;
       });
     });
   }
@@ -81,13 +81,13 @@ class _LanguagePageState extends State<LanguagePage> {
                   String? filePath =
                       path.join(PathManager.instance.filesDir, fileName);
                   if (!await File(filePath).exists()) {
-                    filePath = await _fileDownloader.downloadFile(
+                    filePath = await fileDownloader.downloadFile(
                         language.url, fileName);
                   }
 
                   if (filePath != null) {
-                    await _clozeService.setLanguageFile(filePath);
-                    await _clozeService.initialize();
+                    await clozeService.setLanguageFile(filePath);
+                    await clozeService.initialize();
                     refreshLanguageFilePath();
                   }
                   Navigator.of(context).pop();
@@ -103,7 +103,7 @@ class _LanguagePageState extends State<LanguagePage> {
     final filePath = path.join(PathManager.instance.filesDir,
         UrlUtils.getFileNameFromUrl(language.url));
 
-    if (_languageFilePath != null && _languageFilePath!.contains(filePath)) {
+    if (languageFilePath != null && languageFilePath!.contains(filePath)) {
       return const Icon(Icons.check);
     }
 
@@ -111,8 +111,8 @@ class _LanguagePageState extends State<LanguagePage> {
   }
 
   Icon isCustomLanguageSelectedIcon() {
-    if (_languageFilePath != null &&
-        !_languageFilePath!.contains(PathManager.instance.filesDir)) {
+    if (languageFilePath != null &&
+        !languageFilePath!.contains(PathManager.instance.filesDir)) {
       return const Icon(Icons.check);
     }
     return const Icon(Icons.file_open);
