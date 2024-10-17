@@ -91,7 +91,7 @@ class _LanguagePageState extends State<LanguagePage> {
   }
 
   Widget languageList() {
-    if (isLoading){
+    if (isLoading) {
       return const Center(child: CircularProgressIndicator());
     }
 

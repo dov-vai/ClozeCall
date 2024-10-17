@@ -2,13 +2,13 @@ import 'dart:collection';
 import 'dart:math';
 
 import 'package:cloze_call/data/repositories/config_repository.dart';
+import 'package:cloze_call/pages/learn/widgets/answered_cloze.dart';
 import 'package:cloze_call/pages/learn/widgets/cloze_question.dart';
 import 'package:cloze_call/pages/learn/widgets/counter.dart';
 import 'package:cloze_call/pages/learn/widgets/empty.dart';
 import 'package:cloze_call/pages/learn/widgets/timer.dart';
 import 'package:cloze_call/services/cloze/i_cloze_service.dart';
 import 'package:cloze_call/services/tts_service.dart';
-import 'package:cloze_call/utils/text_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:translator/translator.dart';
@@ -41,7 +41,7 @@ class _LearnPageState extends State<LearnPage> {
       languageCode: '',
       rank: Rank.zero);
   var answer = '';
-  final translatedCache = HashMap<String, String>();
+  final translationCache = HashMap<String, String>();
   int correctAnswers = 0;
   int totalAnswers = 0;
   bool clozeServiceEmpty = false;
@@ -64,6 +64,12 @@ class _LearnPageState extends State<LearnPage> {
       return;
     }
 
+    initializeConfig();
+    currentCloze = getCloze();
+    handsFreeOptionsConfirmed = !widget.handsFree;
+  }
+
+  Future<void> initializeConfig() async {
     config.get('thinking_seconds').then((value) {
       final parsed = int.tryParse(value ?? '');
       if (parsed != null) {
@@ -81,10 +87,6 @@ class _LearnPageState extends State<LearnPage> {
         });
       }
     });
-
-    currentCloze = getCloze();
-
-    handsFreeOptionsConfirmed = !widget.handsFree;
   }
 
   @override
@@ -123,13 +125,12 @@ class _LearnPageState extends State<LearnPage> {
   }
 
   Future<void> onSelected(String selectedWord) async {
-    if (selectedWord == currentCloze.answer) {
-      await widget.clozeService.addForReview(
-          currentCloze.copyWith(rank: currentCloze.rank.increment()));
-    } else {
-      await widget.clozeService
-          .addForReview(currentCloze.copyWith(rank: Rank.zero));
-    }
+    final updatedRank = selectedWord == currentCloze.answer
+        ? currentCloze.rank.increment()
+        : Rank.zero;
+
+    await widget.clozeService
+        .addForReview(currentCloze.copyWith(rank: updatedRank));
 
     tts.play(currentCloze.original, currentCloze.languageCode);
     setState(() {
@@ -161,14 +162,14 @@ class _LearnPageState extends State<LearnPage> {
   }
 
   Future<void> onWordTooltip(String word, String languageCode) async {
-    if (translatedCache[word] != null) {
+    if (translationCache[word] != null) {
       return;
     }
 
     var translation =
         await translator.translate(word, from: languageCode, to: 'en');
     setState(() {
-      translatedCache[word] = translation.text;
+      translationCache[word] = translation.text;
     });
   }
 
@@ -219,7 +220,17 @@ class _LearnPageState extends State<LearnPage> {
         const SizedBox(height: 32),
         Expanded(
           child: answer.isNotEmpty
-              ? answeredCloze()
+              ? AnsweredCloze(
+                  currentCloze: currentCloze,
+                  onWordTooltip: (word) =>
+                      onWordTooltip(word, currentCloze.languageCode),
+                  onNext: onNext,
+                  ttsStop: () => tts.stop(),
+                  ttsPlay: (text, lang) => tts.play(text, lang),
+                  handsFree: widget.handsFree,
+                  answer: answer,
+                  translationCache: translationCache,
+                )
               : ClozeQuestion(
                   cloze: currentCloze,
                   handsFree: widget.handsFree,
@@ -228,94 +239,6 @@ class _LearnPageState extends State<LearnPage> {
                 ),
         ),
       ],
-    );
-  }
-
-  // TODO: this also needs refactoring, too big and bulky, hard to read
-  Widget answeredCloze() {
-    return Column(children: [
-      Wrap(alignment: WrapAlignment.center, children: [
-        for (var word in currentCloze.original.split(' '))
-          Wrap(alignment: WrapAlignment.center, children: [
-            // use mouse region as hovering over the tooltip doesn't call onTrigger (hack)
-            MouseRegion(
-              onEnter: (_) async {
-                await onWordTooltip(
-                    TextUtils.sanitizeWord(word), currentCloze.languageCode);
-              },
-              child: Tooltip(
-                message: translatedCache[TextUtils.sanitizeWord(word)] ??
-                    'Translating...',
-                height: 25,
-                decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.secondary,
-                    borderRadius: BorderRadius.circular(8)),
-                padding: const EdgeInsets.all(8.0),
-                preferBelow: true,
-                textStyle: const TextStyle(
-                  color: ThemeMode.system == ThemeMode.light
-                      ? Colors.white
-                      : Colors.black,
-                  fontSize: 18,
-                ),
-                showDuration: const Duration(seconds: 2),
-                waitDuration: const Duration(milliseconds: 200),
-                onTriggered: () async {
-                  await onWordTooltip(
-                      TextUtils.sanitizeWord(word), currentCloze.languageCode);
-                },
-                child: Text(
-                  word,
-                  style: Theme.of(context)
-                      .textTheme
-                      .headlineLarge
-                      ?.copyWith(decoration: TextDecoration.underline),
-                ),
-              ),
-            ),
-            const Text('  '),
-          ]),
-      ]),
-      const SizedBox(height: 16),
-      Text(currentCloze.translated,
-          style: Theme.of(context)
-              .textTheme
-              .titleMedium
-              ?.copyWith(fontStyle: FontStyle.italic),
-          textAlign: TextAlign.center),
-      IconButton(
-          onPressed: () async {
-            await tts.stop();
-            await tts.play(currentCloze.original, currentCloze.languageCode);
-          },
-          icon: const Icon(Icons.audiotrack)),
-      for (var word in currentCloze.words)
-        Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8.0),
-          child: ElevatedButton(
-              onPressed: () {},
-              style: ElevatedButton.styleFrom(
-                  minimumSize: const Size(double.infinity, 64),
-                  backgroundColor: word == currentCloze.answer
-                      ? Colors.green
-                      : word == answer
-                          ? Colors.red
-                          : null),
-              child: Text(word.toLowerCase(),
-                  style: Theme.of(context).textTheme.titleLarge)),
-        ),
-      const SizedBox(height: 32),
-      if (!widget.handsFree) nextButton()
-    ]);
-  }
-
-  Widget nextButton() {
-    return ElevatedButton(
-      onPressed: () async {
-        await onNext();
-      },
-      style: ElevatedButton.styleFrom(minimumSize: const Size(0, 64)),
-      child: Text('Next', style: Theme.of(context).textTheme.titleLarge),
     );
   }
 }
