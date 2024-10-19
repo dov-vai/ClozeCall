@@ -1,6 +1,7 @@
 import 'package:cloze_call/data/database_helper.dart';
 import 'package:cloze_call/data/repositories/cloze_review_repository.dart';
 import 'package:cloze_call/data/repositories/config_repository.dart';
+import 'package:cloze_call/pages/home/home_page.dart';
 import 'package:cloze_call/pages/language/language_page.dart';
 import 'package:cloze_call/pages/learn/learn_page.dart';
 import 'package:cloze_call/services/cloze/cloze_review_service.dart';
@@ -9,8 +10,6 @@ import 'package:cloze_call/services/tts_service.dart';
 import 'package:cloze_call/utils/path_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-
-import 'pages/home_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
