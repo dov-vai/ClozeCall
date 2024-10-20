@@ -1,3 +1,4 @@
+import 'package:cloze_call/widgets/card_button.dart';
 import 'package:flutter/material.dart';
 
 import '../../../data/models/cloze.dart';
@@ -36,17 +37,10 @@ class ClozeQuestion extends StatelessWidget {
         ),
         const SizedBox(height: 32),
         for (var word in cloze.words)
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8.0),
-            child: ElevatedButton(
-              onPressed: !handsFree ? () => onSelected(word) : null,
-              style: ElevatedButton.styleFrom(
-                minimumSize: const Size(double.infinity, 64),
-              ),
-              child: Text(word.toLowerCase(),
-                  style: Theme.of(context).textTheme.titleLarge),
-            ),
-          )
+          CardButton(
+              title: word.toLowerCase(),
+              rightIcon: Icons.chevron_right,
+              onTap: !handsFree ? () => onSelected(word) : () {})
       ],
     );
   }

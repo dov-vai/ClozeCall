@@ -1,3 +1,4 @@
+import 'package:cloze_call/widgets/card_button.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -44,7 +45,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 ValueListenableBuilder(
                     valueListenable: clozeReviewService.countNotifier,
                     builder: (context, count, _) {
-                      return cardButton(
+                      return CardButton(
                           leftIcon: Icons.book,
                           title: "Review",
                           subtitle: "$count words to review",
@@ -59,7 +60,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   height: 32,
                 ),
                 const Text("Ready for new clozes?"),
-                cardButton(
+                CardButton(
                     leftIcon: Icons.school,
                     title: "Learn",
                     subtitle: "Classic mode with 4 answers",
@@ -67,7 +68,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     onTap: () {
                       Navigator.pushNamed(context, '/learn');
                     }),
-                cardButton(
+                CardButton(
                     leftIcon: Icons.headphones,
                     title: "Hands-Free",
                     subtitle: "Relax from tapping",
@@ -79,7 +80,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   height: 32,
                 ),
                 const Text("Try a different language"),
-                cardButton(
+                CardButton(
                     leftIcon: Icons.language,
                     title: "Language",
                     subtitle: "Pick a language to study",
@@ -149,49 +150,6 @@ class _MyHomePageState extends State<MyHomePage> {
             ],
           )
         ],
-      ),
-    );
-  }
-
-  Widget cardButton({
-    required IconData leftIcon,
-    required String title,
-    required String subtitle,
-    required IconData rightIcon,
-    required VoidCallback onTap,
-  }) {
-    return Card(
-      elevation: 4,
-      margin: const EdgeInsets.symmetric(vertical: 8),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-      child: InkWell(
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Row(
-            children: [
-              Icon(leftIcon, size: 32),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: const TextStyle(
-                          fontSize: 16, fontWeight: FontWeight.bold),
-                    ),
-                    Text(
-                      subtitle,
-                      style: const TextStyle(fontSize: 14, color: Colors.grey),
-                    ),
-                  ],
-                ),
-              ),
-              Icon(rightIcon, size: 32),
-            ],
-          ),
-        ),
       ),
     );
   }

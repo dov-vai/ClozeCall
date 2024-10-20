@@ -1,9 +1,11 @@
 import 'dart:collection';
 
 import 'package:cloze_call/utils/text_utils.dart';
+import 'package:cloze_call/widgets/card_button.dart';
 import 'package:flutter/material.dart';
 
 import '../../../data/models/cloze.dart';
+import '../../../utils/app_colors.dart';
 
 class AnsweredCloze extends StatelessWidget {
   final Cloze currentCloze;
@@ -92,23 +94,23 @@ class AnsweredCloze extends StatelessWidget {
   }
 
   Widget buildAnswerButton(String word, BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: ElevatedButton(
-        onPressed: () {},
-        style: ElevatedButton.styleFrom(
-          minimumSize: const Size(double.infinity, 64),
-          backgroundColor: word == currentCloze.answer
-              ? Colors.green
-              : word == answer
-                  ? Colors.red
-                  : null,
-        ),
-        child: Text(
-          word.toLowerCase(),
-          style: Theme.of(context).textTheme.titleLarge,
-        ),
-      ),
+    Color? backgroundColor = word == currentCloze.answer
+        ? AppColors.green
+        : word == answer
+            ? AppColors.red
+            : null;
+
+    IconData? rightIcon = word == currentCloze.answer
+        ? Icons.check
+        : word == answer
+            ? Icons.close
+            : null;
+
+    return CardButton(
+      title: word,
+      onTap: () {},
+      color: backgroundColor,
+      rightIcon: rightIcon,
     );
   }
 
