@@ -5,6 +5,7 @@ import 'package:cloze_call/services/cloze/cloze_service.dart';
 import 'package:cloze_call/utils/file_downloader.dart';
 import 'package:cloze_call/utils/path_manager.dart';
 import 'package:cloze_call/utils/url_utils.dart';
+import 'package:cloze_call/widgets/card_button.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:path/path.dart' as path;
@@ -38,7 +39,7 @@ class _LanguagePageState extends State<LanguagePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Language'),
+        title: const Text('Pick language'),
       ),
       body: Center(
           child: Padding(
@@ -48,20 +49,18 @@ class _LanguagePageState extends State<LanguagePage> {
                 children: [
                   languageList(),
                   const SizedBox(height: 64),
-                  ElevatedButton.icon(
-                    onPressed: () async {
-                      final path = await clozeService.pickLanguageFile();
-                      progressDialog();
-                      await clozeService.setLanguageFile(path);
-                      await clozeService.initialize();
-                      refreshLanguageFilePath();
-                      Navigator.of(context).pop();
-                    },
-                    style: ElevatedButton.styleFrom(
-                        minimumSize: const Size(double.infinity, 64)),
-                    label: const Text('Select language file'),
-                    icon: isCustomLanguageSelectedIcon(),
-                  ),
+                  CardButton(
+                      title: "Custom language file",
+                      leftIcon: Icons.file_open,
+                      rightIcon: isCustomLanguageSelectedIcon(),
+                      onTap: () async {
+                        final path = await clozeService.pickLanguageFile();
+                        progressDialog();
+                        await clozeService.setLanguageFile(path);
+                        await clozeService.initialize();
+                        refreshLanguageFilePath();
+                        Navigator.of(context).pop();
+                      })
                 ],
               ))),
     );
@@ -97,51 +96,47 @@ class _LanguagePageState extends State<LanguagePage> {
 
     return Column(children: [
       for (var language in languages)
-        Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8),
-            child: ElevatedButton.icon(
-                onPressed: () async {
-                  progressDialog();
-                  final fileName = UrlUtils.getFileNameFromUrl(language.url);
+        CardButton(
+            title: language.name,
+            rightIcon: isLanguageSelectedIcon(language),
+            onTap: () async {
+              progressDialog();
+              final fileName = UrlUtils.getFileNameFromUrl(language.url);
 
-                  String? filePath =
-                      path.join(PathManager.instance.filesDir, fileName);
-                  if (!await File(filePath).exists()) {
-                    filePath = await fileDownloader.downloadFile(
-                        language.url, fileName);
-                  }
+              String? filePath =
+                  path.join(PathManager.instance.filesDir, fileName);
+              if (!await File(filePath).exists()) {
+                filePath =
+                    await fileDownloader.downloadFile(language.url, fileName);
+              }
 
-                  if (filePath != null) {
-                    await clozeService.setLanguageFile(filePath);
-                    await clozeService.initialize();
-                    refreshLanguageFilePath();
-                  }
-                  Navigator.of(context).pop();
-                },
-                style: ElevatedButton.styleFrom(
-                    minimumSize: const Size(double.infinity, 64)),
-                label: Text(language.name),
-                icon: isLanguageSelectedIcon(language)))
+              if (filePath != null) {
+                await clozeService.setLanguageFile(filePath);
+                await clozeService.initialize();
+                refreshLanguageFilePath();
+              }
+              Navigator.of(context).pop();
+            })
     ]);
   }
 
-  Icon? isLanguageSelectedIcon(Language language) {
+  IconData isLanguageSelectedIcon(Language language) {
     final filePath = path.join(PathManager.instance.filesDir,
         UrlUtils.getFileNameFromUrl(language.url));
 
     if (languageFilePath != null && languageFilePath!.contains(filePath)) {
-      return const Icon(Icons.check);
+      return Icons.check;
     }
 
-    return null;
+    return Icons.chevron_right;
   }
 
-  Icon isCustomLanguageSelectedIcon() {
+  IconData isCustomLanguageSelectedIcon() {
     if (languageFilePath != null &&
         !languageFilePath!.contains(PathManager.instance.filesDir)) {
-      return const Icon(Icons.check);
+      return Icons.check;
     }
-    return const Icon(Icons.file_open);
+    return Icons.chevron_right;
   }
 
   Future<void> progressDialog() async {
