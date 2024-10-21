@@ -23,7 +23,7 @@ class ClozeQuestion extends StatelessWidget {
       children: [
         Text(
           cloze.original.replaceFirst(cloze.answer, '_____'),
-          style: Theme.of(context).textTheme.headlineLarge,
+          style: Theme.of(context).textTheme.headlineMedium,
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: 16),

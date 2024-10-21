@@ -219,25 +219,28 @@ class _LearnPageState extends State<LearnPage> {
           TimerWidget(time: timeLeft),
         const SizedBox(height: 32),
         Expanded(
-          child: answer.isNotEmpty
-              ? AnsweredCloze(
-                  currentCloze: currentCloze,
-                  onWordTooltip: (word) =>
-                      onWordTooltip(word, currentCloze.languageCode),
-                  onNext: onNext,
-                  ttsStop: () => tts.stop(),
-                  ttsPlay: (text, lang) => tts.play(text, lang),
-                  handsFree: widget.handsFree,
-                  answer: answer,
-                  translationCache: translationCache,
-                )
-              : ClozeQuestion(
-                  cloze: currentCloze,
-                  handsFree: widget.handsFree,
-                  answered: answer,
-                  onSelected: onSelected,
-                ),
-        ),
+            child: ListView(
+          children: [
+            answer.isNotEmpty
+                ? AnsweredCloze(
+                    currentCloze: currentCloze,
+                    onWordTooltip: (word) =>
+                        onWordTooltip(word, currentCloze.languageCode),
+                    onNext: onNext,
+                    ttsStop: () => tts.stop(),
+                    ttsPlay: (text, lang) => tts.play(text, lang),
+                    handsFree: widget.handsFree,
+                    answer: answer,
+                    translationCache: translationCache,
+                  )
+                : ClozeQuestion(
+                    cloze: currentCloze,
+                    handsFree: widget.handsFree,
+                    answered: answer,
+                    onSelected: onSelected,
+                  ),
+          ],
+        ))
       ],
     );
   }

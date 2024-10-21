@@ -56,7 +56,7 @@ class AnsweredCloze extends StatelessWidget {
           icon: const Icon(Icons.audiotrack),
         ),
         for (var word in currentCloze.words) buildAnswerButton(word, context),
-        const SizedBox(height: 32),
+        const SizedBox(height: 24),
         if (!handsFree) nextButton(context),
       ],
     );
@@ -83,7 +83,7 @@ class AnsweredCloze extends StatelessWidget {
               word,
               style: Theme.of(context)
                   .textTheme
-                  .headlineLarge
+                  .headlineMedium
                   ?.copyWith(decoration: TextDecoration.underline),
             ),
           ),

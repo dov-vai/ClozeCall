@@ -22,6 +22,10 @@ class ClozeReviewService implements IClozeService {
   ClozeReviewService(this._clozeRepo);
 
   Future<void> initialize() async {
+    if (initialized) {
+      return;
+    }
+
     var clozes = await _clozeRepo.entries();
     var now = DateTime.now().toUtc();
 

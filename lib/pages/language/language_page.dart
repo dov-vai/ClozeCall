@@ -43,12 +43,11 @@ class _LanguagePageState extends State<LanguagePage> {
       ),
       body: Center(
           child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 64),
+              padding: const EdgeInsets.all(32),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   languageList(),
-                  const SizedBox(height: 64),
                   CardButton(
                       title: "Custom language file",
                       leftIcon: Icons.file_open,
@@ -60,7 +59,7 @@ class _LanguagePageState extends State<LanguagePage> {
                         await clozeService.initialize();
                         refreshLanguageFilePath();
                         Navigator.of(context).pop();
-                      })
+                      }),
                 ],
               ))),
     );
@@ -94,30 +93,35 @@ class _LanguagePageState extends State<LanguagePage> {
       return const Center(child: CircularProgressIndicator());
     }
 
-    return Column(children: [
-      for (var language in languages)
-        CardButton(
-            title: language.name,
-            rightIcon: isLanguageSelectedIcon(language),
-            onTap: () async {
-              progressDialog();
-              final fileName = UrlUtils.getFileNameFromUrl(language.url);
+    return Expanded(
+        child: GridView.count(
+            childAspectRatio: 1.7,
+            crossAxisSpacing: 8,
+            crossAxisCount: 2,
+            children: [
+          for (var language in languages)
+            CardButton(
+                title: language.name,
+                rightIcon: isLanguageSelectedIcon(language),
+                onTap: () async {
+                  progressDialog();
+                  final fileName = UrlUtils.getFileNameFromUrl(language.url);
 
-              String? filePath =
-                  path.join(PathManager.instance.filesDir, fileName);
-              if (!await File(filePath).exists()) {
-                filePath =
-                    await fileDownloader.downloadFile(language.url, fileName);
-              }
+                  String? filePath =
+                      path.join(PathManager.instance.filesDir, fileName);
+                  if (!await File(filePath).exists()) {
+                    filePath = await fileDownloader.downloadFile(
+                        language.url, fileName);
+                  }
 
-              if (filePath != null) {
-                await clozeService.setLanguageFile(filePath);
-                await clozeService.initialize();
-                refreshLanguageFilePath();
-              }
-              Navigator.of(context).pop();
-            })
-    ]);
+                  if (filePath != null) {
+                    await clozeService.setLanguageFile(filePath);
+                    await clozeService.initialize();
+                    refreshLanguageFilePath();
+                  }
+                  Navigator.of(context).pop();
+                })
+        ]));
   }
 
   IconData isLanguageSelectedIcon(Language language) {

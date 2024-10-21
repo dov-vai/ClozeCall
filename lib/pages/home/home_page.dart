@@ -30,68 +30,72 @@ class _MyHomePageState extends State<MyHomePage> {
           title: const Text("Cloze Call"),
         ),
         body: Center(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 32),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // TODO: stats tracking
-                statsCard(200, 50),
-                const SizedBox(
-                  height: 32,
-                ),
-                const Text("Practice makes perfect"),
-                ValueListenableBuilder(
-                    valueListenable: clozeReviewService.countNotifier,
-                    builder: (context, count, _) {
-                      return CardButton(
-                          leftIcon: Icons.book,
-                          title: "Review",
-                          subtitle: "$count words to review",
-                          rightIcon: Icons.chevron_right,
-                          onTap: () {
-                            if (count != 0) {
-                              Navigator.pushNamed(context, '/review');
-                            }
-                          });
-                    }),
-                const SizedBox(
-                  height: 32,
-                ),
-                const Text("Ready for new clozes?"),
-                CardButton(
-                    leftIcon: Icons.school,
-                    title: "Learn",
-                    subtitle: "Classic mode with 4 answers",
-                    rightIcon: Icons.chevron_right,
-                    onTap: () {
-                      Navigator.pushNamed(context, '/learn');
-                    }),
-                CardButton(
-                    leftIcon: Icons.headphones,
-                    title: "Hands-Free",
-                    subtitle: "Relax from tapping",
-                    rightIcon: Icons.chevron_right,
-                    onTap: () {
-                      Navigator.pushNamed(context, '/handsfree');
-                    }),
-                const SizedBox(
-                  height: 32,
-                ),
-                const Text("Try a different language"),
-                CardButton(
-                    leftIcon: Icons.language,
-                    title: "Language",
-                    subtitle: "Pick a language to study",
-                    rightIcon: Icons.chevron_right,
-                    onTap: () {
-                      Navigator.pushNamed(context, '/language');
-                    })
-              ],
-            ),
-          ),
-        ));
+            child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 32),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: ListView(
+                        children: [
+                          // TODO: stats tracking
+                          statsCard(200, 50),
+                          const SizedBox(
+                            height: 32,
+                          ),
+                          const Text("Practice makes perfect"),
+                          ValueListenableBuilder(
+                              valueListenable: clozeReviewService.countNotifier,
+                              builder: (context, count, _) {
+                                return CardButton(
+                                    leftIcon: Icons.book,
+                                    title: "Review",
+                                    subtitle: "$count words to review",
+                                    rightIcon: Icons.chevron_right,
+                                    onTap: () {
+                                      if (count != 0) {
+                                        Navigator.pushNamed(context, '/review');
+                                      }
+                                    });
+                              }),
+                          const SizedBox(
+                            height: 32,
+                          ),
+                          const Text("Ready for new clozes?"),
+                          CardButton(
+                              leftIcon: Icons.school,
+                              title: "Learn",
+                              subtitle: "Classic mode with 4 answers",
+                              rightIcon: Icons.chevron_right,
+                              onTap: () {
+                                Navigator.pushNamed(context, '/learn');
+                              }),
+                          CardButton(
+                              leftIcon: Icons.headphones,
+                              title: "Hands-Free",
+                              subtitle: "Relax from tapping",
+                              rightIcon: Icons.chevron_right,
+                              onTap: () {
+                                Navigator.pushNamed(context, '/handsfree');
+                              }),
+                          const SizedBox(
+                            height: 32,
+                          ),
+                          const Text("Try a different language"),
+                          CardButton(
+                              leftIcon: Icons.language,
+                              title: "Language",
+                              subtitle: "Pick a language to study",
+                              rightIcon: Icons.chevron_right,
+                              onTap: () {
+                                Navigator.pushNamed(context, '/language');
+                              })
+                        ],
+                      ),
+                    ),
+                  ],
+                ))));
   }
 
   Widget statsCard(int total, int answered) {
@@ -112,7 +116,6 @@ class _MyHomePageState extends State<MyHomePage> {
           child: Padding(
             padding: const EdgeInsets.all(24),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 statsPart(Icons.numbers, total.toString(), 'Total Clozes'),
                 statsPart(Icons.star, answered.toString(), 'Correct Answers'),
@@ -124,34 +127,33 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Widget statsPart(IconData icon, String title, String subtitle) {
     return Expanded(
-      child: Column(
-        children: [
-          Row(
-            children: [
-              Icon(
-                icon,
-                color: Colors.white,
-                size: 32,
-              ),
-              const SizedBox(width: 8),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: const TextStyle(color: Colors.white, fontSize: 24),
-                  ),
-                  Text(
-                    subtitle,
-                    style: const TextStyle(fontSize: 14, color: Colors.white),
-                  )
-                ],
-              )
-            ],
-          )
-        ],
-      ),
-    );
+        child: Column(
+      children: [
+        Row(
+          children: [
+            Icon(
+              icon,
+              color: Colors.white,
+              size: 32,
+            ),
+            const SizedBox(width: 8),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(color: Colors.white, fontSize: 24),
+                ),
+                Text(
+                  subtitle,
+                  style: const TextStyle(fontSize: 14, color: Colors.white),
+                )
+              ],
+            )
+          ],
+        )
+      ],
+    ));
   }
 
   Future<void> uninitializedDialog(ClozeService service) async {

@@ -25,21 +25,21 @@ class HandsFreeOptions extends StatelessWidget {
       children: [
         Text("Hands-free options",
             style: Theme.of(context).textTheme.titleLarge),
-        const SizedBox(height: 32),
+        const Flexible(child: SizedBox(height: 32)),
         _buildOption(
           context,
           "Thinking time (seconds)",
           thinkingSeconds,
           onThinkingChanged,
         ),
-        const SizedBox(height: 32),
+        const Flexible(child: SizedBox(height: 32)),
         _buildOption(
           context,
           "Review time (seconds)",
           reviewSeconds,
           onReviewChanged,
         ),
-        const SizedBox(height: 64),
+        const Flexible(child: SizedBox(height: 64)),
         ElevatedButton(
           onPressed: onConfirm,
           style: ElevatedButton.styleFrom(minimumSize: const Size(0, 64)),
