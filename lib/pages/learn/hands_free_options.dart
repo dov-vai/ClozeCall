@@ -1,3 +1,4 @@
+import 'package:cloze_call/widgets/card_button.dart';
 import 'package:flutter/material.dart';
 
 import 'widgets/number_select.dart';
@@ -23,27 +24,27 @@ class HandsFreeOptions extends StatelessWidget {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Text("Hands-free options",
-            style: Theme.of(context).textTheme.titleLarge),
-        const Flexible(child: SizedBox(height: 32)),
         _buildOption(
           context,
           "Thinking time (seconds)",
           thinkingSeconds,
           onThinkingChanged,
         ),
-        const Flexible(child: SizedBox(height: 32)),
+        const SizedBox(height: 32),
         _buildOption(
           context,
           "Review time (seconds)",
           reviewSeconds,
           onReviewChanged,
         ),
-        const Flexible(child: SizedBox(height: 64)),
-        ElevatedButton(
-          onPressed: onConfirm,
-          style: ElevatedButton.styleFrom(minimumSize: const Size(0, 64)),
-          child: const Text("Let's go!"),
+        const SizedBox(height: 32),
+        SizedBox(
+          width: 200,
+          child: CardButton(
+            title: "Let's go!",
+            onTap: onConfirm,
+            rightIcon: Icons.chevron_right,
+          ),
         ),
       ],
     );
@@ -53,7 +54,7 @@ class HandsFreeOptions extends StatelessWidget {
       void Function(int) onChanged) {
     return Column(
       children: [
-        Text(label, style: Theme.of(context).textTheme.bodyLarge),
+        Text(label, style: Theme.of(context).textTheme.titleLarge),
         NumberSelect(
           value: value,
           onChanged: onChanged,

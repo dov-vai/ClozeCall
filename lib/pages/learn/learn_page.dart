@@ -47,6 +47,7 @@ class _LearnPageState extends State<LearnPage> {
   bool clozeServiceEmpty = false;
   bool userExited = false;
   int timeLeft = 0;
+  int timeSet = 0;
   int thinkingSeconds = 20;
   int reviewSeconds = 10;
   late bool handsFreeOptionsConfirmed;
@@ -96,6 +97,10 @@ class _LearnPageState extends State<LearnPage> {
   }
 
   Future<void> wait(int seconds) async {
+    setState(() {
+      timeSet = seconds;
+    });
+
     for (int i = seconds; i >= 0 && !userExited; i--) {
       setState(() {
         timeLeft = i;
@@ -216,7 +221,7 @@ class _LearnPageState extends State<LearnPage> {
           Counter(
               correct: correctAnswers, incorrect: totalAnswers - correctAnswers)
         else
-          TimerWidget(time: timeLeft),
+          TimerWidget(time: timeLeft, totalTime: timeSet),
         const SizedBox(height: 32),
         Expanded(
             child: ListView(

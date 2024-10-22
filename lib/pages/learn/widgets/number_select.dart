@@ -15,28 +15,33 @@ class NumberSelect extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        IconButton(
-          icon: const Icon(Icons.remove),
-          onPressed: () {
-            if (value > 0) onChanged(value - 1);
-          },
-        ),
+        Padding(
+            padding: const EdgeInsets.all(16),
+            child: IconButton.filled(
+              icon: const Icon(Icons.remove),
+              onPressed: () {
+                if (value > 0) onChanged(value - 1);
+              },
+            )),
         SizedBox(
-          width: 100,
+          width: 120,
           child: TextField(
             textAlign: TextAlign.center,
             keyboardType: TextInputType.number,
             controller: TextEditingController(text: value.toString()),
             onChanged: (val) => onChanged(int.tryParse(val) ?? 0),
             decoration: const InputDecoration(
-              border: OutlineInputBorder(),
+              border: OutlineInputBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(16.0))),
             ),
           ),
         ),
-        IconButton(
-          icon: const Icon(Icons.add),
-          onPressed: () => onChanged(value + 1),
-        ),
+        Padding(
+            padding: const EdgeInsets.all(16),
+            child: IconButton.filled(
+              icon: const Icon(Icons.add),
+              onPressed: () => onChanged(value + 1),
+            ))
       ],
     );
   }
