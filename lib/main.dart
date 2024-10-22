@@ -1,6 +1,7 @@
 import 'package:cloze_call/data/database_helper.dart';
 import 'package:cloze_call/data/repositories/cloze_review_repository.dart';
 import 'package:cloze_call/data/repositories/config_repository.dart';
+import 'package:cloze_call/data/streams/cloze_stream_service.dart';
 import 'package:cloze_call/pages/home/home_page.dart';
 import 'package:cloze_call/pages/language/language_page.dart';
 import 'package:cloze_call/pages/learn/learn_page.dart';
@@ -17,9 +18,10 @@ void main() async {
   final dbHelper = DatabaseHelper();
   final configRepo = ConfigRepository(await dbHelper.database);
   final clozeRepo = ClozeReviewRepository(await dbHelper.database);
-  final clozeService = ClozeService(configRepo, clozeRepo);
+  final clozeStreamService = ClozeStreamService(clozeRepo);
+  final clozeService = ClozeService(configRepo, clozeStreamService);
   await clozeService.initialize();
-  final clozeReviewService = ClozeReviewService(clozeRepo);
+  final clozeReviewService = ClozeReviewService(clozeStreamService);
   await clozeReviewService.initialize();
   final ttsService = TTSService();
   await ttsService.initialize();
@@ -30,6 +32,7 @@ void main() async {
       Provider<ClozeReviewService>(create: (_) => clozeReviewService),
       Provider<TTSService>(create: (_) => ttsService),
       Provider<ConfigRepository>(create: (_) => configRepo),
+      Provider<ClozeStreamService>(create: (_) => clozeStreamService)
     ],
     child: const MyApp(),
   ));

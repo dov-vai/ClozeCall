@@ -3,8 +3,8 @@ import 'dart:io';
 import 'dart:math';
 import 'package:cloze_call/data/models/cloze.dart';
 import 'package:cloze_call/data/models/config.dart';
-import 'package:cloze_call/data/repositories/cloze_review_repository.dart';
 import 'package:cloze_call/data/repositories/config_repository.dart';
+import 'package:cloze_call/data/streams/cloze_stream_service.dart';
 import 'package:cloze_call/services/cloze/i_cloze_service.dart';
 import 'package:cloze_call/utils/text_utils.dart';
 import 'package:file_picker/file_picker.dart';
@@ -17,7 +17,7 @@ class ClozeService implements IClozeService {
   final Random _random = Random();
   bool _initialized = false;
   final ConfigRepository _config;
-  final ClozeReviewRepository _clozeRepo;
+  final ClozeStreamService _clozeService;
   final _languageFileKey = 'language_file';
 
   @override
@@ -27,7 +27,7 @@ class ClozeService implements IClozeService {
     return await _config.get(_languageFileKey);
   }
 
-  ClozeService(this._config, this._clozeRepo);
+  ClozeService(this._config, this._clozeService);
 
   Future<void> initialize() async {
     if (_initialized) {
@@ -105,7 +105,7 @@ class ClozeService implements IClozeService {
 
   @override
   Future<void> addForReview(Cloze cloze) async {
-    await _clozeRepo.insert(cloze);
+    await _clozeService.addCloze(cloze);
   }
 
   Cloze _generateCloze(String line) {

@@ -1,7 +1,7 @@
 import 'dart:math';
 
 import 'package:cloze_call/data/models/cloze.dart';
-import 'package:cloze_call/data/repositories/cloze_review_repository.dart';
+import 'package:cloze_call/data/streams/cloze_stream_service.dart';
 import 'package:cloze_call/services/cloze/i_cloze_service.dart';
 import 'package:flutter/cupertino.dart';
 
@@ -9,7 +9,7 @@ import 'cloze_exceptions.dart';
 
 class ClozeReviewService implements IClozeService {
   final List<Cloze> _clozes = List.empty(growable: true);
-  final ClozeReviewRepository _clozeRepo;
+  final ClozeStreamService _clozeService;
   bool _initialized = false;
   final Random _random = Random();
   final ValueNotifier<int> countNotifier = ValueNotifier<int>(0);
@@ -19,14 +19,14 @@ class ClozeReviewService implements IClozeService {
 
   int get count => _clozes.length;
 
-  ClozeReviewService(this._clozeRepo);
+  ClozeReviewService(this._clozeService);
 
   Future<void> initialize() async {
     if (initialized) {
       return;
     }
 
-    var clozes = await _clozeRepo.entries();
+    var clozes = await _clozeService.getClozes();
     var now = DateTime.now().toUtc();
 
     for (var cloze in clozes) {
@@ -60,7 +60,8 @@ class ClozeReviewService implements IClozeService {
   // should have it's rank increased/decreased depending whether it was answered correctly or not
   @override
   Future<void> addForReview(Cloze cloze) async {
-    await _clozeRepo.update(cloze.copyWith(timestamp: DateTime.now().toUtc()));
+    await _clozeService
+        .updateCloze(cloze.copyWith(timestamp: DateTime.now().toUtc()));
   }
 
   void _isInitialized() {

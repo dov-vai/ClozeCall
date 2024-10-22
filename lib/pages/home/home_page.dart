@@ -1,3 +1,4 @@
+import 'package:cloze_call/data/streams/cloze_stream_service.dart';
 import 'package:cloze_call/widgets/card_button.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -13,12 +14,34 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  late final ClozeReviewService clozeReviewService;
+  late final ClozeService clozeService;
+  late final ClozeStreamService clozeStreamService;
+  int totalClozes = 0;
+
+  @override
+  void initState() {
+    super.initState();
+
+    clozeReviewService =
+        Provider.of<ClozeReviewService>(context, listen: false);
+    clozeService = Provider.of<ClozeService>(context, listen: false);
+    clozeStreamService =
+        Provider.of<ClozeStreamService>(context, listen: false);
+
+    setupStats();
+  }
+
+  void setupStats() {
+    clozeStreamService.count.listen((count) {
+      setState(() {
+        totalClozes = count;
+      });
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    var clozeReviewService =
-        Provider.of<ClozeReviewService>(context, listen: false);
-    var clozeService = Provider.of<ClozeService>(context, listen: false);
-
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (!clozeService.initialized) {
         await uninitializedDialog(clozeService);
@@ -39,8 +62,8 @@ class _MyHomePageState extends State<MyHomePage> {
                     Expanded(
                       child: ListView(
                         children: [
-                          // TODO: stats tracking
-                          statsCard(200, 50),
+                          // TODO: more stats
+                          statsCard(totalClozes),
                           const SizedBox(
                             height: 32,
                           ),
@@ -98,7 +121,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 ))));
   }
 
-  Widget statsCard(int total, int answered) {
+  Widget statsCard(int total) {
     return Card(
       elevation: 4,
       shape: RoundedRectangleBorder(
@@ -118,7 +141,6 @@ class _MyHomePageState extends State<MyHomePage> {
             child: Row(
               children: [
                 statsPart(Icons.numbers, total.toString(), 'Total Clozes'),
-                statsPart(Icons.star, answered.toString(), 'Correct Answers'),
               ],
             ),
           )),

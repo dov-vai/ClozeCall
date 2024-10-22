@@ -1,5 +1,5 @@
 import 'package:cloze_call/data/models/cloze.dart';
-import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'package:sqflite/sqflite.dart';
 
 class ClozeReviewRepository {
   final Database _db;
@@ -49,5 +49,10 @@ class ClozeReviewRepository {
     final maps = await _db.query(_tableName);
 
     return [for (final data in maps) Cloze.fromMap(data)];
+  }
+
+  Future<int> count() async {
+    return Sqflite.firstIntValue(
+            await _db.query(_tableName, columns: ['COUNT(*)'])) ?? 0;
   }
 }
