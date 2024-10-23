@@ -53,6 +53,7 @@ class ClozeReviewRepository {
 
   Future<int> count() async {
     return Sqflite.firstIntValue(
-            await _db.query(_tableName, columns: ['COUNT(*)'])) ?? 0;
+            await _db.query(_tableName, columns: ['COUNT(*)'])) ??
+        0;
   }
 }

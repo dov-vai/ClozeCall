@@ -1,4 +1,3 @@
-import 'dart:collection';
 import 'dart:math';
 
 import 'package:cloze_call/data/repositories/config_repository.dart';
@@ -11,7 +10,6 @@ import 'package:cloze_call/services/cloze/i_cloze_service.dart';
 import 'package:cloze_call/services/tts_service.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:translator/translator.dart';
 
 import '../../data/enums/rank.dart';
 import '../../data/models/cloze.dart';
@@ -31,7 +29,6 @@ class LearnPage extends StatefulWidget {
 
 class _LearnPageState extends State<LearnPage> {
   final random = Random();
-  final translator = GoogleTranslator();
   var currentCloze = Cloze(
       timestamp: DateTime.now().toUtc(),
       original: '',
@@ -41,7 +38,6 @@ class _LearnPageState extends State<LearnPage> {
       languageCode: '',
       rank: Rank.zero);
   var answer = '';
-  final translationCache = HashMap<String, String>();
   int correctAnswers = 0;
   int totalAnswers = 0;
   bool clozeServiceEmpty = false;
@@ -166,18 +162,6 @@ class _LearnPageState extends State<LearnPage> {
     });
   }
 
-  Future<void> onWordTooltip(String word, String languageCode) async {
-    if (translationCache[word] != null) {
-      return;
-    }
-
-    var translation =
-        await translator.translate(word, from: languageCode, to: 'en');
-    setState(() {
-      translationCache[word] = translation.text;
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -229,14 +213,11 @@ class _LearnPageState extends State<LearnPage> {
             answer.isNotEmpty
                 ? AnsweredCloze(
                     currentCloze: currentCloze,
-                    onWordTooltip: (word) =>
-                        onWordTooltip(word, currentCloze.languageCode),
                     onNext: onNext,
                     ttsStop: () => tts.stop(),
                     ttsPlay: (text, lang) => tts.play(text, lang),
                     handsFree: widget.handsFree,
                     answer: answer,
-                    translationCache: translationCache,
                   )
                 : ClozeQuestion(
                     cloze: currentCloze,
