@@ -106,3 +106,9 @@ install(DIRECTORY "${PROJECT_BUILD_DIR}/${FLUTTER_ASSET_DIR_NAME}"
 install(FILES "${AOT_LIBRARY}" DESTINATION "${INSTALL_BUNDLE_DATA_DIR}"
   CONFIGURATIONS Profile;Release
   COMPONENT Runtime)
+
+# Copy pre-compiled SQLite3 library to release directory be used with SQFlite FFI
+set(SQLITE_DLL_FILE "sqlite3.dll")
+install(FILES "${SQLITE_DLL_FILE}" DESTINATION "${CMAKE_BINARY_DIR}/runner/Release"
+        CONFIGURATIONS Profile;Release
+        COMPONENT Runtime)

@@ -9,7 +9,7 @@ on:
       - main
 
 jobs:
-  build:
+  build-linux:
     name: "Linux & Android build"
     runs-on: ubuntu-latest
 
@@ -40,14 +40,20 @@ jobs:
           cd build
           tar -czf linux_build.tar.gz -C linux/x64/release bundle
 
-      - name: Upload artifacts
+      - name: Upload Android artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: Releases
+          name: android_build
           path: |
             build/app/outputs/flutter-apk/app-arm64-v8a-release.apk
             build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk
             build/app/outputs/flutter-apk/app-x86_64-release.apk
+
+      - name: Upload Linux artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux_build
+          path: |
             build/linux_build.tar.gz
 
       - name: Extract version from pubspec.yaml
@@ -61,10 +67,64 @@ jobs:
             new_version="${{ env.VERSION }}-build-${{ github.run_number }}"
             echo "VERSION=$new_version" >> $GITHUB_ENV
 
+  build-windows:
+    name: "Windows build"
+    runs-on: windows-latest
+
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+
+      - run: flutter pub get
+      - run: flutter build windows
+
+      - name: Create Windows build archive
+        run: |
+          cd build
+          tar -czf windows_build.tar.gz -C windows/x64/runner Release
+
+      - name: Upload Windows artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows_build
+          path: |
+            build/windows_build.tar.gz
+            
+  release:
+    name: "Create release"
+    runs-on: ubuntu-latest
+    needs:
+      - build-linux
+      - build-windows
+
+    steps:
+      - name: Download Linux build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: linux_build
+          path: build/
+
+      - name: Download Windows build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: windows_build
+          path: build/
+
+      - name: Download Android build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: android_build
+          path: build/
+
       - name: Create release
         uses: ncipollo/release-action@v1
         with:
-          artifacts: "build/app/outputs/flutter-apk/app-arm64-v8a-release.apk,build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk,build/app/outputs/flutter-apk/app-x86_64-release.apk,build/linux_build.tar.gz"
+          artifacts: "build/app/outputs/flutter-apk/app-arm64-v8a-release.apk,build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk,build/app/outputs/flutter-apk/app-x86_64-release.apk,build/linux_build.tar.gz,build/windows_build.tar.gz"
           tag: v${{ env.VERSION }}
           token: ${{ secrets.TOKEN }}
           generateReleaseNotes: true
