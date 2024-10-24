@@ -30,6 +30,7 @@ class _MyHomePageState extends State<MyHomePage> {
         Provider.of<ClozeStreamService>(context, listen: false);
 
     setupStats();
+    showInitDialog();
   }
 
   void setupStats() {
@@ -40,14 +41,16 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
-  @override
-  Widget build(BuildContext context) {
+  Future<void> showInitDialog() async {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (!clozeService.initialized) {
         await uninitializedDialog(clozeService);
       }
     });
+  }
 
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
           title: const Text("Cloze Call"),
