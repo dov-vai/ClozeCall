@@ -1,5 +1,8 @@
+import 'dart:async';
+
 import 'package:cloze_call/data/streams/cloze_stream_service.dart';
 import 'package:cloze_call/widgets/card_button.dart';
+import 'package:cloze_call/widgets/progress_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -30,7 +33,9 @@ class _MyHomePageState extends State<MyHomePage> {
         Provider.of<ClozeStreamService>(context, listen: false);
 
     setupStats();
-    showInitDialog();
+    loadLanguageFile().then((_) {
+      showInitDialog();
+    });
   }
 
   void setupStats() {
@@ -42,11 +47,30 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Future<void> showInitDialog() async {
+    if (clozeService.initialized) {
+      return;
+    }
+
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      if (!clozeService.initialized) {
-        await uninitializedDialog(clozeService);
-      }
+      await uninitializedDialog();
     });
+  }
+
+  Future<void> loadLanguageFile() async {
+    if (clozeService.initialized) {
+      return;
+    }
+
+    final completer = Completer<void>();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      progressDialog(context);
+      await clozeService.initialize();
+      Navigator.pop(context);
+      completer.complete();
+    });
+
+    return completer.future;
   }
 
   @override
@@ -181,7 +205,7 @@ class _MyHomePageState extends State<MyHomePage> {
     ));
   }
 
-  Future<void> uninitializedDialog(ClozeService service) async {
+  Future<void> uninitializedDialog() async {
     return showDialog(
         context: context,
         barrierDismissible: false,

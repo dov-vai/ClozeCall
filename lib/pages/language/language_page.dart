@@ -11,6 +11,7 @@ import 'package:provider/provider.dart';
 import 'package:path/path.dart' as path;
 import 'package:http/http.dart' as http;
 
+import '../../widgets/progress_dialog.dart';
 import 'language.dart';
 
 class LanguagePage extends StatefulWidget {
@@ -54,7 +55,7 @@ class _LanguagePageState extends State<LanguagePage> {
                       rightIcon: isCustomLanguageSelectedIcon(),
                       onTap: () async {
                         final path = await clozeService.pickLanguageFile();
-                        progressDialog();
+                        progressDialog(context);
                         await clozeService.setLanguageFile(path);
                         await clozeService.initialize();
                         refreshLanguageFilePath();
@@ -104,7 +105,7 @@ class _LanguagePageState extends State<LanguagePage> {
                 title: language.name,
                 rightIcon: isLanguageSelectedIcon(language),
                 onTap: () async {
-                  progressDialog();
+                  progressDialog(context);
                   final fileName = UrlUtils.getFileNameFromUrl(language.url);
 
                   String? filePath =
@@ -141,24 +142,5 @@ class _LanguagePageState extends State<LanguagePage> {
       return Icons.check;
     }
     return Icons.chevron_right;
-  }
-
-  Future<void> progressDialog() async {
-    return showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (context) {
-          return const AlertDialog(
-              title: Text('Please wait'),
-              content: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text('Loading language'),
-                  SizedBox(height: 16),
-                  LinearProgressIndicator()
-                ],
-              ));
-        });
   }
 }

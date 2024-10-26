@@ -20,7 +20,6 @@ void main() async {
   final clozeRepo = ClozeReviewRepository(await dbHelper.database);
   final clozeStreamService = ClozeStreamService(clozeRepo);
   final clozeService = ClozeService(configRepo, clozeStreamService);
-  await clozeService.initialize();
   final clozeReviewService = ClozeReviewService(clozeStreamService);
   await clozeReviewService.initialize();
   final ttsService = TTSService();
