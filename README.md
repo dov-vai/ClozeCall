@@ -4,7 +4,7 @@ Cloze language learning app built using Flutter.
 
 Inspired by [Clozemaster](https://www.clozemaster.com/). I didn't want to pay 75€/y so I built my own.
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/339cc5af-1dae-4b1d-a75e-801959f680dc" width="30%"></img>
+  <img src="https://github.com/user-attachments/assets/10d847ec-7610-4859-b473-52b37ed428bf" width="30%"></img>
   <img src="https://github.com/user-attachments/assets/255c9c7a-d203-4c43-9888-3ac4cc6bc49d" width="30%"></img>
 </p>
 
