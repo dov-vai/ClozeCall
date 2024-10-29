@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:cloze_call/data/streams/cloze_stream_service.dart';
 import 'package:cloze_call/widgets/card_button.dart';
@@ -21,6 +22,8 @@ class _MyHomePageState extends State<MyHomePage> {
   late final ClozeService clozeService;
   late final ClozeStreamService clozeStreamService;
   int totalClozes = 0;
+  double level = 0;
+  int clozesToNextLevel = 0;
 
   @override
   void initState() {
@@ -42,6 +45,9 @@ class _MyHomePageState extends State<MyHomePage> {
     clozeStreamService.count.listen((count) {
       setState(() {
         totalClozes = count;
+        level = 0.32 * sqrt(totalClozes);
+        int clozesNeeded = pow((level + 1).floor() / 0.32, 2).ceil();
+        clozesToNextLevel = clozesNeeded - totalClozes;
       });
     });
   }
@@ -89,8 +95,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     Expanded(
                       child: ListView(
                         children: [
-                          // TODO: more stats
-                          statsCard(totalClozes),
+                          statsCard(totalClozes, level, clozesToNextLevel),
                           const SizedBox(
                             height: 32,
                           ),
@@ -148,7 +153,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 ))));
   }
 
-  Widget statsCard(int total) {
+  Widget statsCard(int total, double level, int clozesToNextLevel) {
     return Card(
       elevation: 4,
       shape: RoundedRectangleBorder(
@@ -165,18 +170,30 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
           child: Padding(
             padding: const EdgeInsets.all(24),
-            child: Row(
-              children: [
-                statsPart(Icons.numbers, total.toString(), 'Total Clozes'),
-              ],
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                bool isHorizontal = constraints.maxWidth > 280;
+
+                return Flex(
+                  direction: isHorizontal ? Axis.horizontal : Axis.vertical,
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    statsPart(Icons.numbers, total.toString(), 'Total Clozes'),
+                    const SizedBox(
+                      height: 8,
+                    ),
+                    statsPart(Icons.star, "Level ${level.floor()}",
+                        "Next: $clozesToNextLevel Clozes"),
+                  ],
+                );
+              },
             ),
           )),
     );
   }
 
   Widget statsPart(IconData icon, String title, String subtitle) {
-    return Expanded(
-        child: Column(
+    return Column(
       children: [
         Row(
           children: [
@@ -187,6 +204,7 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
             const SizedBox(width: 8),
             Column(
+              mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
@@ -202,7 +220,7 @@ class _MyHomePageState extends State<MyHomePage> {
           ],
         )
       ],
-    ));
+    );
   }
 
   Future<void> uninitializedDialog() async {
