@@ -6,6 +6,7 @@ import 'package:cloze_call/utils/file_downloader.dart';
 import 'package:cloze_call/utils/path_manager.dart';
 import 'package:cloze_call/utils/url_utils.dart';
 import 'package:cloze_call/widgets/card_button.dart';
+import 'package:cloze_call/widgets/network_error.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:path/path.dart' as path;
@@ -26,14 +27,14 @@ class _LanguagePageState extends State<LanguagePage> {
   late ClozeService clozeService;
   String? languageFilePath;
   List<Language> languages = [];
-  bool isLoading = true;
+  late Future<void> _languagesFuture;
 
   @override
   void initState() {
     super.initState();
     clozeService = Provider.of<ClozeService>(context, listen: false);
     refreshLanguageFilePath();
-    fetchLanguages();
+    _languagesFuture = fetchLanguages();
   }
 
   @override
@@ -48,7 +49,23 @@ class _LanguagePageState extends State<LanguagePage> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  languageList(),
+                  Expanded(
+                    child: FutureBuilder(
+                        future: _languagesFuture,
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState ==
+                              ConnectionState.done) {
+                            if (snapshot.hasError) {
+                              return const NetworkErrorWidget(
+                                  description: "Couldn't fetch languages");
+                            }
+                            return languageList();
+                          } else {
+                            return const Center(
+                                child: CircularProgressIndicator());
+                          }
+                        }),
+                  ),
                   CardButton(
                       title: "Custom language file",
                       leftIcon: Icons.file_open,
@@ -82,7 +99,6 @@ class _LanguagePageState extends State<LanguagePage> {
       final List<dynamic> jsonList = jsonDecode(response.body);
       setState(() {
         languages = jsonList.map((json) => Language.fromJson(json)).toList();
-        isLoading = false;
       });
     } else {
       throw Exception('Failed to load languages');
@@ -90,16 +106,11 @@ class _LanguagePageState extends State<LanguagePage> {
   }
 
   Widget languageList() {
-    if (isLoading) {
-      return const Center(child: CircularProgressIndicator());
-    }
-
-    return Expanded(
-        child: GridView.count(
-            childAspectRatio: 1.7,
-            crossAxisSpacing: 8,
-            crossAxisCount: 2,
-            children: [
+    return GridView.count(
+        childAspectRatio: 1.7,
+        crossAxisSpacing: 8,
+        crossAxisCount: 2,
+        children: [
           for (var language in languages)
             CardButton(
                 title: language.name,
@@ -122,7 +133,7 @@ class _LanguagePageState extends State<LanguagePage> {
                   }
                   Navigator.of(context).pop();
                 })
-        ]));
+        ]);
   }
 
   IconData isLanguageSelectedIcon(Language language) {

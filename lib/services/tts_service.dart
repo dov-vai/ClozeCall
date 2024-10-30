@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'package:audioplayers/audioplayers.dart';
 import 'package:edge_tts/edge_tts.dart';
+import 'package:http/http.dart';
 
 class TTSService {
   final AudioPlayer _player = AudioPlayer();
@@ -15,8 +16,15 @@ class TTSService {
     if (_initialized) {
       return;
     }
-    _voicesManager = await VoicesManager.create();
-    _initialized = true;
+
+    try {
+      _voicesManager = await VoicesManager.create();
+      _initialized = true;
+    }
+    // TODO: better connection failure handling, auto reconnection etc.
+    on ClientException {
+      _initialized = false;
+    }
   }
 
   Future<void> play(String text, String languageCode) async {
