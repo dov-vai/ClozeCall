@@ -1,7 +1,9 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
 import 'package:cloze_call/services/cloze/cloze_service.dart';
+import 'package:cloze_call/services/connectivity_service.dart';
 import 'package:cloze_call/utils/file_downloader.dart';
 import 'package:cloze_call/utils/path_manager.dart';
 import 'package:cloze_call/utils/url_utils.dart';
@@ -28,13 +30,34 @@ class _LanguagePageState extends State<LanguagePage> {
   String? languageFilePath;
   List<Language> languages = [];
   late Future<void> _languagesFuture;
+  late ConnectivityService connectivity;
+  late StreamSubscription connStream;
+  bool connected = false;
 
   @override
   void initState() {
     super.initState();
     clozeService = Provider.of<ClozeService>(context, listen: false);
+    connectivity = Provider.of<ConnectivityService>(context, listen: false);
     refreshLanguageFilePath();
-    _languagesFuture = fetchLanguages();
+    connStream =
+        connectivity.onConnectivityChanged.listen(onConnectivityChanged);
+  }
+
+  @override
+  void dispose() {
+    connStream.cancel();
+    super.dispose();
+  }
+
+  void onConnectivityChanged(bool connected) {
+    setState(() {
+      this.connected = connected;
+
+      if (connected) {
+        _languagesFuture = fetchLanguages();
+      }
+    });
   }
 
   @override
@@ -49,23 +72,7 @@ class _LanguagePageState extends State<LanguagePage> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Expanded(
-                    child: FutureBuilder(
-                        future: _languagesFuture,
-                        builder: (context, snapshot) {
-                          if (snapshot.connectionState ==
-                              ConnectionState.done) {
-                            if (snapshot.hasError) {
-                              return const NetworkErrorWidget(
-                                  description: "Couldn't fetch languages");
-                            }
-                            return languageList();
-                          } else {
-                            return const Center(
-                                child: CircularProgressIndicator());
-                          }
-                        }),
-                  ),
+                  Expanded(child: buildLanguageList()),
                   CardButton(
                       title: "Custom language file",
                       leftIcon: Icons.file_open,
@@ -81,6 +88,28 @@ class _LanguagePageState extends State<LanguagePage> {
                 ],
               ))),
     );
+  }
+
+  Widget buildLanguageList() {
+    Widget networkError =
+        const NetworkErrorWidget(description: "Couldn't fetch languages");
+
+    if (connected) {
+      return FutureBuilder(
+          future: _languagesFuture,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.done) {
+              if (snapshot.hasError) {
+                return networkError;
+              }
+              return languageList();
+            } else {
+              return const Center(child: CircularProgressIndicator());
+            }
+          });
+    }
+
+    return networkError;
   }
 
   void refreshLanguageFilePath() {

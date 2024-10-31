@@ -11,6 +11,7 @@ class AnsweredCloze extends StatelessWidget {
   final Function() ttsStop;
   final Function(String, String) ttsPlay;
   final bool handsFree;
+  final bool connected;
   final String? answer;
 
   const AnsweredCloze(
@@ -20,20 +21,14 @@ class AnsweredCloze extends StatelessWidget {
       required this.ttsStop,
       required this.ttsPlay,
       required this.handsFree,
+      required this.connected,
       this.answer});
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Wrap(
-          alignment: WrapAlignment.center,
-          children: [
-            for (var word in currentCloze.original.split(' '))
-              TranslatableWord(
-                  word: word, languageCode: currentCloze.languageCode),
-          ],
-        ),
+        buildWords(context),
         const SizedBox(height: 16),
         Text(
           currentCloze.translated,
@@ -43,17 +38,37 @@ class AnsweredCloze extends StatelessWidget {
               ?.copyWith(fontStyle: FontStyle.italic),
           textAlign: TextAlign.center,
         ),
-        IconButton(
-          onPressed: () async {
-            await ttsStop();
-            await ttsPlay(currentCloze.original, currentCloze.languageCode);
-          },
-          icon: const Icon(Icons.audiotrack),
-        ),
+        if (connected)
+          IconButton(
+            onPressed: () async {
+              await ttsStop();
+              await ttsPlay(currentCloze.original, currentCloze.languageCode);
+            },
+            icon: const Icon(Icons.audiotrack),
+          ),
         for (var word in currentCloze.words) buildAnswerButton(word, context),
         const SizedBox(height: 24),
         if (!handsFree) nextButton(context),
       ],
+    );
+  }
+
+  Widget buildWords(BuildContext context) {
+    if (connected) {
+      return Wrap(
+        alignment: WrapAlignment.center,
+        children: [
+          for (var word in currentCloze.original.split(' '))
+            TranslatableWord(
+                word: word, languageCode: currentCloze.languageCode),
+        ],
+      );
+    }
+
+    return Text(
+      currentCloze.original,
+      style: Theme.of(context).textTheme.headlineMedium,
+      textAlign: TextAlign.center,
     );
   }
 

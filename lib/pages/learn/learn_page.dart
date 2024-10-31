@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:cloze_call/data/repositories/config_repository.dart';
@@ -7,6 +8,7 @@ import 'package:cloze_call/pages/learn/widgets/counter.dart';
 import 'package:cloze_call/pages/learn/widgets/empty.dart';
 import 'package:cloze_call/pages/learn/widgets/timer.dart';
 import 'package:cloze_call/services/cloze/i_cloze_service.dart';
+import 'package:cloze_call/services/connectivity_service.dart';
 import 'package:cloze_call/services/tts_service.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -42,6 +44,7 @@ class _LearnPageState extends State<LearnPage> {
   int totalAnswers = 0;
   bool clozeServiceEmpty = false;
   bool userExited = false;
+  bool connected = false;
   int timeLeft = 0;
   int timeSet = 0;
   int thinkingSeconds = 20;
@@ -49,21 +52,32 @@ class _LearnPageState extends State<LearnPage> {
   late bool handsFreeOptionsConfirmed;
   late ConfigRepository config;
   late TTSService tts;
+  late ConnectivityService connectivity;
+  late StreamSubscription connStream;
 
   @override
   void initState() {
     super.initState();
     tts = Provider.of<TTSService>(context, listen: false);
     config = Provider.of<ConfigRepository>(context, listen: false);
+    connectivity = Provider.of<ConnectivityService>(context, listen: false);
 
     if (!widget.clozeService.initialized) {
       Navigator.pop(context);
       return;
     }
 
+    connStream =
+        connectivity.onConnectivityChanged.listen(onConnectivityChanged);
     initializeConfig();
     currentCloze = getCloze();
     handsFreeOptionsConfirmed = !widget.handsFree;
+  }
+
+  void onConnectivityChanged(bool connected) {
+    setState(() {
+      this.connected = connected;
+    });
   }
 
   Future<void> initializeConfig() async {
@@ -89,6 +103,7 @@ class _LearnPageState extends State<LearnPage> {
   @override
   void dispose() {
     userExited = true;
+    connStream.cancel();
     super.dispose();
   }
 
@@ -133,7 +148,10 @@ class _LearnPageState extends State<LearnPage> {
     await widget.clozeService
         .addForReview(currentCloze.copyWith(rank: updatedRank));
 
-    tts.play(currentCloze.original, currentCloze.languageCode);
+    if (connected) {
+      tts.play(currentCloze.original, currentCloze.languageCode);
+    }
+
     setState(() {
       answer = selectedWord;
     });
@@ -166,7 +184,12 @@ class _LearnPageState extends State<LearnPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Learn'),
+        actions: [
+          if (!connected)
+            const Padding(
+                padding: EdgeInsets.only(right: 16),
+                child: Icon(Icons.signal_wifi_bad))
+        ],
       ),
       body: Center(
         child: Padding(
@@ -217,6 +240,7 @@ class _LearnPageState extends State<LearnPage> {
                     ttsStop: () => tts.stop(),
                     ttsPlay: (text, lang) => tts.play(text, lang),
                     handsFree: widget.handsFree,
+                    connected: connected,
                     answer: answer,
                   )
                 : ClozeQuestion(

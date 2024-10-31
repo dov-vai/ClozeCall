@@ -1,8 +1,11 @@
+import 'dart:async';
 import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:audioplayers/audioplayers.dart';
+import 'package:cloze_call/services/connectivity_service.dart';
 import 'package:edge_tts/edge_tts.dart';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart';
 
 class TTSService {
@@ -11,6 +14,19 @@ class TTSService {
   final _random = Random();
   late VoicesManager _voicesManager;
   bool _initialized = false;
+  final ConnectivityService _connectivity;
+
+  TTSService(this._connectivity) {
+    // FIXME: this blocks onListen call for every new listener after it, why?!
+    // supposed to auto init once connected
+    // _connectivity.onConnectivityChanged.listen(onConnectivityChanged);
+  }
+
+  void onConnectivityChanged(bool connected) {
+    if (connected) {
+      initialize();
+    }
+  }
 
   Future<void> initialize() async {
     if (_initialized) {
@@ -21,8 +37,11 @@ class TTSService {
       _voicesManager = await VoicesManager.create();
       _initialized = true;
     }
-    // TODO: better connection failure handling, auto reconnection etc.
-    on ClientException {
+    // FIXME: is there a better way to handle this? I don't want the app to not load because of this
+    on ClientException catch (e) {
+      if (kDebugMode) {
+        debugPrint('Error initializing TTS service: $e');
+      }
       _initialized = false;
     }
   }

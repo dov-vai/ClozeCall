@@ -49,6 +49,7 @@ dependencies:
   sqflite: ^2.3.3+2
   dio: ^5.7.0
   http: ^1.2.2
+  connectivity_plus: ^6.1.0
 
 dev_dependencies:
   flutter_test:
