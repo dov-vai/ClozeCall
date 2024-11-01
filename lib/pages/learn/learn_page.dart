@@ -74,7 +74,12 @@ class _LearnPageState extends State<LearnPage> {
     handsFreeOptionsConfirmed = !widget.handsFree;
   }
 
-  void onConnectivityChanged(bool connected) {
+  Future<void> onConnectivityChanged(bool connected) async {
+    // in case the user enters learning while offline,
+    if (connected) {
+      await tts.initialize();
+    }
+
     setState(() {
       this.connected = connected;
     });

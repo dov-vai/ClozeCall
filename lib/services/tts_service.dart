@@ -14,19 +14,6 @@ class TTSService {
   final _random = Random();
   late VoicesManager _voicesManager;
   bool _initialized = false;
-  final ConnectivityService _connectivity;
-
-  TTSService(this._connectivity) {
-    // FIXME: this blocks onListen call for every new listener after it, why?!
-    // supposed to auto init once connected
-    // _connectivity.onConnectivityChanged.listen(onConnectivityChanged);
-  }
-
-  void onConnectivityChanged(bool connected) {
-    if (connected) {
-      initialize();
-    }
-  }
 
   Future<void> initialize() async {
     if (_initialized) {

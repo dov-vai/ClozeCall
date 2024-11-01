@@ -18,13 +18,14 @@ void main() async {
   await PathManager.instance.initialize();
   final dbHelper = DatabaseHelper();
   final connectivityService = ConnectivityService();
+  WidgetsBinding.instance.addObserver(connectivityService);
   final configRepo = ConfigRepository(await dbHelper.database);
   final clozeRepo = ClozeReviewRepository(await dbHelper.database);
   final clozeStreamService = ClozeStreamService(clozeRepo);
   final clozeService = ClozeService(configRepo, clozeStreamService);
   final clozeReviewService = ClozeReviewService(clozeStreamService);
   await clozeReviewService.initialize();
-  final ttsService = TTSService(connectivityService);
+  final ttsService = TTSService();
   await ttsService.initialize();
 
   runApp(MultiProvider(
