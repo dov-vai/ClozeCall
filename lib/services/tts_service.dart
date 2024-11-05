@@ -38,7 +38,7 @@ class TTSService {
     }
 
     if (_ttsState == null || _ttsState?.text != text) {
-      var audio = await _getTTS(text, languageCode);
+      final audio = await _getTTS(text, languageCode);
       _ttsState = (text: text, audio: audio);
     }
     await _player.play(BytesSource(_ttsState!.audio));
@@ -51,8 +51,8 @@ class TTSService {
   Future<Uint8List> _getTTS(String text, String languageCode) async {
     BytesBuilder builder = BytesBuilder();
     // FIXME: probably not very efficient doing this every tts run
-    var voices = _voicesManager.find(locale: languageCode);
-    var communicate = Communicate(
+    final voices = _voicesManager.find(locale: languageCode);
+    final communicate = Communicate(
         text: text, voice: voices[_random.nextInt(voices.length)].shortName);
     await for (var message in communicate.stream()) {
       if (message['type'] == 'audio') {

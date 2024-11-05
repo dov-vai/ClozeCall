@@ -10,7 +10,7 @@ class FileDownloader {
   Future<String?> downloadFile(String url, String fileName,
       {Function(int received, int total)? onReceiveProgress}) async {
     try {
-      String savePath = path.join(PathManager.instance.filesDir, fileName);
+      final savePath = path.join(PathManager.instance.filesDir, fileName);
 
       await dio.download(url, savePath, onReceiveProgress: onReceiveProgress);
 

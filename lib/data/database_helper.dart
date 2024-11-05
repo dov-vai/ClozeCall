@@ -20,7 +20,7 @@ class DatabaseHelper {
 
     if (Platform.isWindows || Platform.isLinux) {
       sqfliteFfiInit();
-      var databaseFactory = databaseFactoryFfi;
+      final databaseFactory = databaseFactoryFfi;
       final db = await databaseFactory.openDatabase(dbPath,
           options: OpenDatabaseOptions(version: 1, onCreate: _onCreate));
 
