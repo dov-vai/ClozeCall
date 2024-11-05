@@ -3,7 +3,6 @@ import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:audioplayers/audioplayers.dart';
-import 'package:cloze_call/services/connectivity_service.dart';
 import 'package:edge_tts/edge_tts.dart';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart';

@@ -70,9 +70,10 @@ class _MyHomePageState extends State<MyHomePage> {
     final completer = Completer<void>();
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final navigator = Navigator.of(context);
       progressDialog(context);
       await clozeService.initialize();
-      Navigator.pop(context);
+      navigator.pop();
       completer.complete();
     });
 

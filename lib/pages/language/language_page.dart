@@ -78,12 +78,13 @@ class _LanguagePageState extends State<LanguagePage> {
                       leftIcon: Icons.file_open,
                       rightIcon: isCustomLanguageSelectedIcon(),
                       onTap: () async {
-                        final path = await clozeService.pickLanguageFile();
+                        final navigator = Navigator.of(context);
                         progressDialog(context);
+                        final path = await clozeService.pickLanguageFile();
                         await clozeService.setLanguageFile(path);
                         await clozeService.initialize();
                         refreshLanguageFilePath();
-                        Navigator.of(context).pop();
+                        navigator.pop();
                       }),
                 ],
               ))),
@@ -145,6 +146,7 @@ class _LanguagePageState extends State<LanguagePage> {
                 title: language.name,
                 rightIcon: isLanguageSelectedIcon(language),
                 onTap: () async {
+                  final navigator = Navigator.of(context);
                   progressDialog(context);
                   final fileName = UrlUtils.getFileNameFromUrl(language.url);
 
@@ -160,7 +162,7 @@ class _LanguagePageState extends State<LanguagePage> {
                     await clozeService.initialize();
                     refreshLanguageFilePath();
                   }
-                  Navigator.of(context).pop();
+                  navigator.pop();
                 })
         ]);
   }
