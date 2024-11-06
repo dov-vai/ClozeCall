@@ -1,4 +1,8 @@
-# Cloze Call
+<p align="center">
+    <img src="android/app/src/main/res/mipmap-xxxhdpi/ic_launcher_round.webp" alt="Cloze Call logo">
+</p>
+
+<h1 align="center">Cloze Call</h1>
 
 Cloze language learning app built using Flutter.
 
