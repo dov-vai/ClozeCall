@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:cloze_call/data/streams/cloze_stream_service.dart';
+import 'package:cloze_call/pages/home/widgets/stats_card.dart';
 import 'package:cloze_call/widgets/card_button.dart';
 import 'package:cloze_call/widgets/progress_dialog.dart';
 import 'package:flutter/material.dart';
@@ -96,7 +97,10 @@ class _MyHomePageState extends State<MyHomePage> {
                     Expanded(
                       child: ListView(
                         children: [
-                          statsCard(totalClozes, level, clozesToNextLevel),
+                          StatsCard(
+                              totalClozes: totalClozes,
+                              level: level,
+                              clozesToNextLevel: clozesToNextLevel),
                           const SizedBox(
                             height: 32,
                           ),
@@ -152,76 +156,6 @@ class _MyHomePageState extends State<MyHomePage> {
                     ),
                   ],
                 ))));
-  }
-
-  Widget statsCard(int total, double level, int clozesToNextLevel) {
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
-            gradient: const LinearGradient(
-              colors: [Color(0xffD38312), Color(0xffA83279)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                bool isHorizontal = constraints.maxWidth > 280;
-
-                return Flex(
-                  direction: isHorizontal ? Axis.horizontal : Axis.vertical,
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    statsPart(Icons.numbers, total.toString(), 'Total Clozes'),
-                    const SizedBox(
-                      height: 8,
-                    ),
-                    statsPart(Icons.star, "Level ${level.floor()}",
-                        "Next: $clozesToNextLevel Clozes"),
-                  ],
-                );
-              },
-            ),
-          )),
-    );
-  }
-
-  Widget statsPart(IconData icon, String title, String subtitle) {
-    return Column(
-      children: [
-        Row(
-          children: [
-            Icon(
-              icon,
-              color: Colors.white,
-              size: 32,
-            ),
-            const SizedBox(width: 8),
-            Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(color: Colors.white, fontSize: 24),
-                ),
-                Text(
-                  subtitle,
-                  style: const TextStyle(fontSize: 14, color: Colors.white),
-                )
-              ],
-            )
-          ],
-        )
-      ],
-    );
   }
 
   Future<void> uninitializedDialog() async {
